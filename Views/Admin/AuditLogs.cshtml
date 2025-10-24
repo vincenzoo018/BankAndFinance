@@ -1,0 +1,39 @@
+@model IEnumerable<BankAndFinance.Models.AuditLog>
+
+@{
+    ViewBag.Title = "Audit Logs";
+    ViewBag.PageTitle = "Audit Logs";
+    ViewBag.Breadcrumb = "Home / Administration / Audit Logs";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">System Audit Logs</div>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Log ID</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Module</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model)
+                {
+                    <tr>
+                        <td>#LOG@log.LogId</td>
+                        <td>@log.User?.FullName (@log.User?.Email)</td>
+                        <td>@log.Action</td>
+                        <td><span class="status-badge status-active">@log.Module</span></td>
+                        <td>@log.Timestamp.ToString("yyyy-MM-dd hh:mm:ss tt")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

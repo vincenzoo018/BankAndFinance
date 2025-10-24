@@ -1,0 +1,37 @@
+@model IEnumerable<BankAndFinance.Models.LedgerAccount>
+
+@{
+    ViewBag.Title = "Ledger Accounts";
+    ViewBag.PageTitle = "Ledger Accounts";
+    ViewBag.Breadcrumb = "Home / Accounting / Ledger Accounts";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">General Ledger Accounts</div>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Ledger ID</th>
+                    <th>Account Name</th>
+                    <th>Balance</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ledger in Model)
+                {
+                    <tr>
+                        <td>#@ledger.LedgerId</td>
+                        <td><strong>@ledger.AccountName</strong></td>
+                        <td><strong>$@ledger.Balance.ToString("N2")</strong></td>
+                        <td>@ledger.CreatedAt.ToString("yyyy-MM-dd")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

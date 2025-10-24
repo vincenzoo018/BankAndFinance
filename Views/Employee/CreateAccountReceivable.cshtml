@@ -1,0 +1,50 @@
+@model BankAndFinance.Models.AccountsReceivable
+
+@{
+    ViewBag.Title = "Create Account Receivable";
+    ViewBag.PageTitle = "Create New Account Receivable";
+    ViewBag.Breadcrumb = "Home / Finance / Accounts Receivable / Create";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Create Account Receivable</div>
+    </div>
+    
+    <div class="form-container" style="padding: 20px;">
+        <form method="post" asp-action="CreateAccountReceivable" asp-controller="Employee">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="PayerName">Payer Name</label>
+                    <input type="text" class="form-input" id="PayerName" name="PayerName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="Amount">Amount</label>
+                    <input type="number" class="form-input" id="Amount" name="Amount" step="0.01" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="DueDate">Due Date</label>
+                    <input type="date" class="form-input" id="DueDate" name="DueDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="Status">Status</label>
+                    <select class="form-select" id="Status" name="Status">
+                        <option value="Pending">Pending</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Overdue">Overdue</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button type="submit" class="btn-submit">Create Account Receivable</button>
+                <a href="@Url.Action("AccountsReceivable", "Employee")" class="btn-cancel">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

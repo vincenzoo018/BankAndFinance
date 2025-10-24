@@ -1,0 +1,43 @@
+@model IEnumerable<BankAndFinance.Models.BankAccount>
+
+@{
+    ViewBag.Title = "Bank Accounts";
+    ViewBag.PageTitle = "Bank Accounts Management";
+    ViewBag.Breadcrumb = "Home / Banking / Bank Accounts";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">All Bank Accounts</div>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Account ID</th>
+                    <th>Account Number</th>
+                    <th>Customer Name</th>
+                    <th>Email</th>
+                    <th>Account Type</th>
+                    <th>Balance</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var account in Model)
+                {
+                    <tr>
+                        <td>#@account.AccountId</td>
+                        <td><strong>@account.AccountNumber</strong></td>
+                        <td>@account.User?.FullName</td>
+                        <td>@account.User?.Email</td>
+                        <td><span class="status-badge status-active">@account.AccountType</span></td>
+                        <td><strong>$@account.Balance.ToString("N2")</strong></td>
+                        <td>@account.CreatedAt.ToString("yyyy-MM-dd")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

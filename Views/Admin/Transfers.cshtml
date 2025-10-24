@@ -1,0 +1,41 @@
+@model IEnumerable<BankAndFinance.Models.Transfer>
+
+@{
+    ViewBag.Title = "Transfers";
+    ViewBag.PageTitle = "Fund Transfers";
+    ViewBag.Breadcrumb = "Home / Banking / Transfers";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Fund Transfer History</div>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Transfer ID</th>
+                    <th>Sender Account</th>
+                    <th>Receiver Account</th>
+                    <th>Amount</th>
+                    <th>Transfer Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var transfer in Model)
+                {
+                    <tr>
+                        <td>#TRF@transfer.TransferId</td>
+                        <td>@transfer.SenderAccount?.AccountNumber</td>
+                        <td>@transfer.ReceiverAccount?.AccountNumber</td>
+                        <td><strong>$@transfer.Amount.ToString("N2")</strong></td>
+                        <td>@transfer.TransferDate.ToString("yyyy-MM-dd hh:mm tt")</td>
+                        <td><span class="status-badge status-@transfer.Status.ToLower()">@transfer.Status</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

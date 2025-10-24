@@ -1,0 +1,277 @@
+@model IEnumerable<BankAndFinance.Models.Transaction>
+
+@{
+    ViewBag.Title = "Transactions";
+    ViewBag.PageTitle = "My Transactions";
+    ViewBag.Breadcrumb = "Home / Transactions";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Transaction History</div>
+    </div>
+    
+    <div class="filter-bar">
+        <input type="date" class="filter-input" id="filterDate">
+        <select class="filter-select" id="filterType">
+            <option value="">All Types</option>
+            <option value="Deposit">Deposit</option>
+            <option value="Withdraw">Withdraw</option>
+            <option value="Transfer">Transfer</option>
+            <option value="Bill Payment">Bill Payment</option>
+        </select>
+        <select class="filter-select" id="filterStatus">
+            <option value="">All Status</option>
+            <option value="Completed">Completed</option>
+            <option value="Pending">Pending</option>
+            <option value="Failed">Failed</option>
+        </select>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                    <th>Reference Number</th>
+                    <th style="text-align: center;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var transaction in Model)
+                {
+                    <tr>
+                        <td>#TXN@transaction.TransactionId</td>
+                        <td><span class="status-badge status-active">@transaction.TransactionType</span></td>
+                        <td><strong>$@transaction.Amount.ToString("N2")</strong></td>
+                        <td>@transaction.TransactionDate.ToString("yyyy-MM-dd hh:mm tt")</td>
+                        <td><span class="status-badge status-@transaction.Status.ToLower()">@transaction.Status</span></td>
+                        <td>@transaction.ReferenceNumber</td>
+                        <td style="text-align: center;">
+                            <button class="btn-edit" onclick='printReceipt(@transaction.TransactionId, "@transaction.TransactionType", @transaction.Amount, "@transaction.TransactionDate.ToString("yyyy-MM-dd hh:mm tt")", "@transaction.Status", "@transaction.ReferenceNumber")' style="background: #10b981;">
+                                🖨️ Print
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Print Receipt Modal -->
+<div class="modal-overlay" id="receiptModal">
+    <div class="modal" style="max-width: 600px;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">
+            <h3 class="modal-title">🧾 Transaction Receipt</h3>
+            <button class="modal-close" onclick="closeReceiptModal()">&times;</button>
+        </div>
+        <div id="receiptContent" style="padding: 0;">
+            <!-- Receipt content will be dynamically generated here -->
+        </div>
+        <div style="padding: 20px; display: flex; gap: 12px; background: #f8fafc; border-top: 1px solid #e2e8f0;">
+            <button onclick="printReceiptContent()" class="btn btn-primary" style="flex: 1;">🖨️ Print Receipt</button>
+            <button onclick="closeReceiptModal()" class="btn btn-outline" style="flex: 1;">Close</button>
+        </div>
+    </div>
+</div>
+
+<style>
+@@media print {
+    body * {
+        visibility: hidden;
+    }
+    #receiptContent, #receiptContent * {
+        visibility: visible;
+    }
+    #receiptContent {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+    .no-print {
+        display: none !important;
+    }
+}
+
+.receipt-container {
+    background: white;
+    padding: 40px;
+    font-family: 'Courier New', monospace;
+}
+
+.receipt-header {
+    text-align: center;
+    border-bottom: 2px dashed #333;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+.receipt-logo {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.receipt-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.receipt-subtitle {
+    font-size: 14px;
+    color: #666;
+}
+
+.receipt-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px dotted #ccc;
+}
+
+.receipt-label {
+    font-weight: bold;
+    color: #333;
+}
+
+.receipt-value {
+    color: #000;
+    text-align: right;
+}
+
+.receipt-amount {
+    font-size: 32px;
+    font-weight: bold;
+    text-align: center;
+    padding: 20px;
+    background: #f0fdf4;
+    border-radius: 8px;
+    margin: 20px 0;
+    color: #10b981;
+}
+
+.receipt-footer {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px dashed #333;
+    font-size: 12px;
+    color: #666;
+}
+
+.receipt-status {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.receipt-status.completed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.receipt-status.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.receipt-status.failed {
+    background: #fee2e2;
+    color: #991b1b;
+}
+</style>
+
+<script>
+function printReceipt(txnId, type, amount, date, status, reference) {
+    const currentDate = new Date().toLocaleString();
+    const accountNumber = '@ViewBag.AccountNumber' || 'N/A';
+    const customerName = '@Context.Session.GetString("UserName")' || 'Customer';
+    
+    const receiptHTML = `
+        <div class="receipt-container">
+            <div class="receipt-header">
+                <div class="receipt-logo">🏦</div>
+                <div class="receipt-title">BFAS - Bank & Finance</div>
+                <div class="receipt-subtitle">Transaction Receipt</div>
+            </div>
+            
+            <div class="receipt-row">
+                <span class="receipt-label">Transaction ID:</span>
+                <span class="receipt-value">#TXN${txnId}</span>
+            </div>
+            
+            <div class="receipt-row">
+                <span class="receipt-label">Customer Name:</span>
+                <span class="receipt-value">${customerName}</span>
+            </div>
+            
+            <div class="receipt-row">
+                <span class="receipt-label">Account Number:</span>
+                <span class="receipt-value">${accountNumber}</span>
+            </div>
+            
+            <div class="receipt-row">
+                <span class="receipt-label">Transaction Type:</span>
+                <span class="receipt-value">${type}</span>
+            </div>
+            
+            <div class="receipt-row">
+                <span class="receipt-label">Reference Number:</span>
+                <span class="receipt-value">${reference}</span>
+            </div>
+            
+            <div class="receipt-row">
+                <span class="receipt-label">Date & Time:</span>
+                <span class="receipt-value">${date}</span>
+            </div>
+            
+            <div class="receipt-row">
+                <span class="receipt-label">Status:</span>
+                <span class="receipt-value">
+                    <span class="receipt-status ${status.toLowerCase()}">${status}</span>
+                </span>
+            </div>
+            
+            <div class="receipt-amount">
+                $${parseFloat(amount).toFixed(2)}
+            </div>
+            
+            <div class="receipt-footer">
+                <p><strong>Thank you for banking with us!</strong></p>
+                <p>This is a computer-generated receipt. No signature required.</p>
+                <p>Printed on: ${currentDate}</p>
+                <p style="margin-top: 15px; font-size: 10px;">
+                    © 2024 BFAS - Bank & Finance Accounting System<br>
+                    For inquiries, please contact support@bfas.com
+                </p>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('receiptContent').innerHTML = receiptHTML;
+    document.getElementById('receiptModal').classList.add('active');
+}
+
+function closeReceiptModal() {
+    document.getElementById('receiptModal').classList.remove('active');
+}
+
+function printReceiptContent() {
+    window.print();
+}
+
+// Close modal when clicking outside
+document.getElementById('receiptModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeReceiptModal();
+    }
+});
+</script>

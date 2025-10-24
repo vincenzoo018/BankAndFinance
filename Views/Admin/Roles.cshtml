@@ -1,0 +1,35 @@
+@model IEnumerable<BankAndFinance.Models.Role>
+
+@{
+    ViewBag.Title = "Roles";
+    ViewBag.PageTitle = "Role Management";
+    ViewBag.Breadcrumb = "Home / User Management / Roles";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">System Roles</div>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Role ID</th>
+                    <th>Role Name</th>
+                    <th>Total Users</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var role in Model)
+                {
+                    <tr>
+                        <td>#@role.RoleId</td>
+                        <td><strong>@role.RoleName</strong></td>
+                        <td>@role.Users.Count users</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

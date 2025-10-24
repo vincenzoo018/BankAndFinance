@@ -1,0 +1,234 @@
+@model BankAndFinance.Models.User
+
+@{
+    ViewBag.Title = "Profile";
+    ViewBag.PageTitle = "My Profile";
+    ViewBag.Breadcrumb = "Home / Profile";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success fade-in" style="background: #dcfce7; color: #16a34a; padding: 16px 20px; border-radius: 12px; margin-bottom: 24px; border-left: 4px solid #16a34a; display: flex; align-items: center; gap: 12px; max-width: 1000px; margin: 0 auto 24px;">
+        <span style="font-size: 20px;">✅</span>
+        <strong>@TempData["Success"]</strong>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-error fade-in" style="background: #fee2e2; color: #dc2626; padding: 16px 20px; border-radius: 12px; margin-bottom: 24px; border-left: 4px solid #dc2626; display: flex; align-items: center; gap: 12px; max-width: 1000px; margin: 0 auto 24px;">
+        <span style="font-size: 20px;">❌</span>
+        <strong>@TempData["Error"]</strong>
+    </div>
+}
+
+<!-- Profile Header Card -->
+<div class="card fade-in" style="max-width: 1000px; margin: 0 auto 24px;">
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; border-radius: 16px 16px 0 0; text-align: center; position: relative;">
+        <div style="width: 120px; height: 120px; background: white; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: 700; color: #667eea; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            @Model.FullName.Substring(0, 2).ToUpper()
+        </div>
+        <h2 style="color: white; margin: 0 0 8px; font-size: 28px;">@Model.FullName</h2>
+        <p style="color: rgba(255,255,255,0.9); margin: 0 0 16px; font-size: 16px;">@Model.Email</p>
+        <div style="display: flex; gap: 12px; justify-content: center; align-items: center;">
+            <span class="status-badge" style="background: rgba(255,255,255,0.2); color: white; padding: 8px 16px;">
+                @Model.Status
+            </span>
+            <span style="color: rgba(255,255,255,0.9); font-size: 14px;">
+                Member since @Model.CreatedAt.ToString("MMM yyyy")
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Personal Information Card -->
+<div class="card fade-in" style="max-width: 1000px; margin: 0 auto 24px;">
+    <div class="card-header">
+        <div class="card-title">📋 Personal Information</div>
+        <button class="btn btn-primary" onclick="openEditModal()">
+            ✏️ Edit Profile
+        </button>
+    </div>
+    
+    <div style="padding: 32px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+            <div class="info-box">
+                <div class="info-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">👤</div>
+                <div>
+                    <div class="info-label">Full Name</div>
+                    <div class="info-value">@Model.FullName</div>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <div class="info-icon" style="background: linear-gradient(135deg, #10b981, #059669);">📧</div>
+                <div>
+                    <div class="info-label">Email Address</div>
+                    <div class="info-value">@Model.Email</div>
+                </div>
+            </div>
+            
+            @if (Model.CustomerProfile != null)
+            {
+                <div class="info-box">
+                    <div class="info-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">📱</div>
+                    <div>
+                        <div class="info-label">Phone Number</div>
+                        <div class="info-value">@(Model.CustomerProfile.Phone ?? "Not provided")</div>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <div class="info-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">🎂</div>
+                    <div>
+                        <div class="info-label">Date of Birth</div>
+                        <div class="info-value">@(Model.CustomerProfile.DateOfBirth?.ToString("MMMM dd, yyyy") ?? "Not provided")</div>
+                    </div>
+                </div>
+                
+                <div class="info-box" style="grid-column: 1 / -1;">
+                    <div class="info-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">📍</div>
+                    <div>
+                        <div class="info-label">Address</div>
+                        <div class="info-value">@(Model.CustomerProfile.Address ?? "Not provided")</div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Account Settings Card -->
+<div class="card fade-in" style="max-width: 1000px; margin: 0 auto;">
+    <div class="card-header">
+        <div class="card-title">🔐 Account Settings</div>
+    </div>
+    
+    <div style="padding: 32px;">
+        <div style="display: grid; gap: 16px;">
+            <div style="padding: 20px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #3b82f6; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-weight: 600; color: #1e293b; margin-bottom: 4px;">Change Password</div>
+                    <div style="font-size: 13px; color: #64748b;">Update your account password</div>
+                </div>
+                <button class="btn btn-outline" onclick="alert('Password change feature coming soon!')">
+                    Change Password
+                </button>
+            </div>
+            
+            <div style="padding: 20px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #10b981; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-weight: 600; color: #1e293b; margin-bottom: 4px;">Account ID</div>
+                    <div style="font-size: 13px; color: #64748b;">Your unique customer identifier</div>
+                </div>
+                <div style="background: white; padding: 8px 16px; border-radius: 8px; font-weight: 700; color: #10b981;">
+                    #@Model.UserId
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal" style="max-width: 700px;">
+        <div class="modal-header">
+            <h3 class="modal-title">✏️ Edit Your Profile</h3>
+            <button class="modal-close" onclick="closeEditModal()">&times;</button>
+        </div>
+        <form id="editForm" method="post" action="@Url.Action("UpdateProfile", "Customer")">
+            <div class="form-group">
+                <label for="fullName">👤 Full Name</label>
+                <input type="text" class="form-input" id="fullName" name="fullName" value="@Model.FullName" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">📧 Email Address</label>
+                <input type="email" class="form-input" id="email" name="email" value="@Model.Email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">📱 Phone Number</label>
+                <input type="tel" class="form-input" id="phone" name="phone" value="@(Model.CustomerProfile?.Phone ?? "")" placeholder="+1 (555) 123-4567">
+            </div>
+            
+            <div class="form-group">
+                <label for="dateOfBirth">🎂 Date of Birth</label>
+                <input type="date" class="form-input" id="dateOfBirth" name="dateOfBirth" value="@(Model.CustomerProfile?.DateOfBirth?.ToString("yyyy-MM-dd") ?? "")">
+            </div>
+            
+            <div class="form-group">
+                <label for="address">📍 Address</label>
+                <textarea class="form-input" id="address" name="address" rows="3" placeholder="Enter your complete address">@(Model.CustomerProfile?.Address ?? "")</textarea>
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">💾 Save Changes</button>
+                <button type="button" class="btn btn-outline" style="flex: 1;" onclick="closeEditModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.info-box {
+    padding: 24px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    transition: all 0.3s ease;
+}
+
+.info-box:hover {
+    border-color: #3b82f6;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.info-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.info-label {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.info-value {
+    font-size: 16px;
+    color: #1e293b;
+    font-weight: 600;
+    word-break: break-word;
+}
+</style>
+
+<script>
+function openEditModal() {
+    document.getElementById('editModal').classList.add('active');
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.remove('active');
+}
+
+// Close modal when clicking outside
+document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeEditModal();
+    }
+});
+</script>

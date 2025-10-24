@@ -1,0 +1,39 @@
+@model IEnumerable<BankAndFinance.Models.FinancialStatement>
+
+@{
+    ViewBag.Title = "Financial Statements";
+    ViewBag.PageTitle = "Financial Statements";
+    ViewBag.Breadcrumb = "Home / Accounting / Financial Statements";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Financial Statements</div>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Statement ID</th>
+                    <th>Statement Type</th>
+                    <th>Period</th>
+                    <th>Total Amount</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var statement in Model)
+                {
+                    <tr>
+                        <td>#FS@statement.FsId</td>
+                        <td><strong>@statement.StatementType</strong></td>
+                        <td>@statement.Period</td>
+                        <td><strong>$@statement.TotalAmount.ToString("N2")</strong></td>
+                        <td>@statement.CreatedAt.ToString("yyyy-MM-dd")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,114 @@
+@{
+    ViewBag.Title = "Dashboard";
+    ViewBag.PageTitle = "Employee Dashboard";
+    ViewBag.Breadcrumb = "Home / Dashboard";
+}
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon yellow">📤</div>
+        <div class="stat-label">Pending Payables</div>
+        <div class="stat-value">@ViewBag.PendingPayables</div>
+        <div class="stat-change">↑ Requires Attention</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green">📥</div>
+        <div class="stat-label">Pending Receivables</div>
+        <div class="stat-value">@ViewBag.PendingReceivables</div>
+        <div class="stat-change">↑ Awaiting Payment</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon blue">📝</div>
+        <div class="stat-label">My Journal Entries</div>
+        <div class="stat-value">@ViewBag.TotalJournalEntries</div>
+        <div class="stat-change">↑ Total Entries</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon purple">💸</div>
+        <div class="stat-label">Today's Transactions</div>
+        <div class="stat-value">@ViewBag.TodayTransactions</div>
+        <div class="stat-change">↑ System Wide</div>
+    </div>
+</div>
+
+<div class="content-grid">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Pending Accounts Payable</div>
+            <a href="@Url.Action("AccountsPayable", "Employee")" class="view-all-btn">View All</a>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>AP ID</th>
+                        <th>Payee Name</th>
+                        <th>Amount</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.RecentPayables != null)
+                    {
+                        @foreach (var payable in ViewBag.RecentPayables)
+                        {
+                            <tr>
+                                <td>#AP@payable.ApId</td>
+                                <td>@payable.PayeeName</td>
+                                <td><strong>$@payable.Amount.ToString("N2")</strong></td>
+                                <td>@payable.DueDate.ToString("yyyy-MM-dd")</td>
+                                <td><span class="status-badge status-pending">@payable.Status</span></td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" style="text-align: center;">No pending payables</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Pending Accounts Receivable</div>
+            <a href="@Url.Action("AccountsReceivable", "Employee")" class="view-all-btn">View All</a>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>AR ID</th>
+                        <th>Payer Name</th>
+                        <th>Amount</th>
+                        <th>Due Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.RecentReceivables != null)
+                    {
+                        @foreach (var receivable in ViewBag.RecentReceivables)
+                        {
+                            <tr>
+                                <td>#AR@receivable.ArId</td>
+                                <td>@receivable.PayerName</td>
+                                <td><strong>$@receivable.Amount.ToString("N2")</strong></td>
+                                <td>@receivable.DueDate.ToString("yyyy-MM-dd")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" style="text-align: center;">No pending receivables</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

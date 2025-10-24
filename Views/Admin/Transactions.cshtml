@@ -1,0 +1,62 @@
+@model IEnumerable<BankAndFinance.Models.Transaction>
+
+@{
+    ViewBag.Title = "Transactions";
+    ViewBag.PageTitle = "All Transactions";
+    ViewBag.Breadcrumb = "Home / Banking / Transactions";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Transaction History</div>
+    </div>
+    
+    <div class="filter-bar">
+        <input type="date" class="filter-input" id="filterDate">
+        <select class="filter-select" id="filterType">
+            <option value="">All Types</option>
+            <option value="Deposit">Deposit</option>
+            <option value="Withdraw">Withdraw</option>
+            <option value="Transfer">Transfer</option>
+            <option value="Bill Payment">Bill Payment</option>
+        </select>
+        <select class="filter-select" id="filterStatus">
+            <option value="">All Status</option>
+            <option value="Completed">Completed</option>
+            <option value="Pending">Pending</option>
+            <option value="Failed">Failed</option>
+        </select>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Account Number</th>
+                    <th>Customer</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Reference</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var transaction in Model)
+                {
+                    <tr>
+                        <td>#TXN@transaction.TransactionId</td>
+                        <td>@transaction.BankAccount?.AccountNumber</td>
+                        <td>@transaction.BankAccount?.User?.FullName</td>
+                        <td>@transaction.TransactionType</td>
+                        <td>$@transaction.Amount.ToString("N2")</td>
+                        <td>@transaction.TransactionDate.ToString("yyyy-MM-dd hh:mm tt")</td>
+                        <td><span class="status-badge status-@transaction.Status.ToLower()">@transaction.Status</span></td>
+                        <td>@transaction.ReferenceNumber</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

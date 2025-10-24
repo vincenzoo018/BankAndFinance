@@ -1,0 +1,87 @@
+@{
+    ViewBag.Title = "Create Journal Entry";
+    ViewBag.PageTitle = "Create New Journal Entry";
+    ViewBag.Breadcrumb = "Home / Accounting / Journal Entries / Create";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Create Journal Entry</div>
+    </div>
+    
+    <div class="form-container" style="padding: 20px;">
+        <form method="post" asp-action="CreateJournalEntry" asp-controller="Employee">
+            <div class="form-row full">
+                <div class="form-group">
+                    <label for="Description">Description</label>
+                    <input type="text" class="form-input" id="Description" name="Description" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="Date">Date</label>
+                    <input type="date" class="form-input" id="Date" name="Date" value="@DateTime.Now.ToString("yyyy-MM-dd")" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ReferenceNumber">Reference Number</label>
+                    <input type="text" class="form-input" id="ReferenceNumber" name="ReferenceNumber" required>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; margin-bottom: 20px;">
+                <h3 style="font-size: 16px; color: #1e293b; margin-bottom: 15px;">Journal Entry Lines</h3>
+                <div id="journalLines">
+                    <div class="form-row" style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+                        <div class="form-group">
+                            <label>Account Name</label>
+                            <input type="text" class="form-input" name="lines[0].AccountName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Debit</label>
+                            <input type="number" class="form-input" name="lines[0].Debit" step="0.01" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Credit</label>
+                            <input type="number" class="form-input" name="lines[0].Credit" step="0.01" value="0">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn-cancel" onclick="addJournalLine()">Add Line</button>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button type="submit" class="btn-submit">Create Journal Entry</button>
+                <a href="@Url.Action("JournalEntries", "Employee")" class="btn-cancel">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let lineCount = 1;
+    
+    function addJournalLine() {
+        const container = document.getElementById('journalLines');
+        const newLine = document.createElement('div');
+        newLine.className = 'form-row';
+        newLine.style.cssText = 'background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 10px;';
+        newLine.innerHTML = `
+            <div class="form-group">
+                <label>Account Name</label>
+                <input type="text" class="form-input" name="lines[${lineCount}].AccountName" required>
+            </div>
+            <div class="form-group">
+                <label>Debit</label>
+                <input type="number" class="form-input" name="lines[${lineCount}].Debit" step="0.01" value="0">
+            </div>
+            <div class="form-group">
+                <label>Credit</label>
+                <input type="number" class="form-input" name="lines[${lineCount}].Credit" step="0.01" value="0">
+            </div>
+        `;
+        container.appendChild(newLine);
+        lineCount++;
+    }
+</script>

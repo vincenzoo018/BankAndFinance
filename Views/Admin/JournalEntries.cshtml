@@ -1,0 +1,46 @@
+@model IEnumerable<BankAndFinance.Models.JournalEntry>
+
+@{
+    ViewBag.Title = "Journal Entries";
+    ViewBag.PageTitle = "Journal Entries";
+    ViewBag.Breadcrumb = "Home / Accounting / Journal Entries";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Journal Entries</div>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Journal ID</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Reference Number</th>
+                    <th>Total Debit</th>
+                    <th>Total Credit</th>
+                    <th>Created By</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entry in Model)
+                {
+                    var totalDebit = entry.JournalEntryLines.Sum(l => l.Debit);
+                    var totalCredit = entry.JournalEntryLines.Sum(l => l.Credit);
+                    
+                    <tr>
+                        <td>#JE@entry.JournalId</td>
+                        <td>@entry.Date.ToString("yyyy-MM-dd")</td>
+                        <td>@entry.Description</td>
+                        <td>@entry.ReferenceNumber</td>
+                        <td><strong>$@totalDebit.ToString("N2")</strong></td>
+                        <td><strong>$@totalCredit.ToString("N2")</strong></td>
+                        <td>@entry.Creator?.FullName</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

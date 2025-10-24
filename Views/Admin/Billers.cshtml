@@ -1,0 +1,39 @@
+@model IEnumerable<BankAndFinance.Models.Biller>
+
+@{
+    ViewBag.Title = "Billers";
+    ViewBag.PageTitle = "Biller Management";
+    ViewBag.Breadcrumb = "Home / Banking / Billers";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Registered Billers</div>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Biller ID</th>
+                    <th>Biller Name</th>
+                    <th>Biller Type</th>
+                    <th>Total Payments</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var biller in Model)
+                {
+                    <tr>
+                        <td>#@biller.BillerId</td>
+                        <td><strong>@biller.BillerName</strong></td>
+                        <td><span class="status-badge status-active">@biller.BillerType</span></td>
+                        <td>@biller.Payments.Count payments</td>
+                        <td>@biller.CreatedAt.ToString("yyyy-MM-dd")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

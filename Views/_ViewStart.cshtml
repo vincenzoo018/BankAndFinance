@@ -1,0 +1,22 @@
+@{
+    string layout = "";
+    
+    if (ViewContext.RouteData.Values["controller"]?.ToString() == "Auth")
+    {
+        layout = null;
+    }
+    else if (Context.Session.GetString("UserRole") == "Admin")
+    {
+        layout = "_AdminLayout";
+    }
+    else if (Context.Session.GetString("UserRole") == "Employee")
+    {
+        layout = "_EmployeeLayout";
+    }
+    else if (Context.Session.GetString("UserRole") == "Customer")
+    {
+        layout = "_CustomerLayout";
+    }
+    
+    Layout = layout;
+}

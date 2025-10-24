@@ -1,0 +1,129 @@
+@model IEnumerable<BankAndFinance.Models.CustomerProfile>
+
+@{
+    ViewBag.Title = "Customer Profiles";
+    ViewBag.PageTitle = "Customer Profiles";
+    ViewBag.Breadcrumb = "Home / User Management / Customer Profiles";
+}
+
+<div class="card fade-in">
+    <div class="card-header">
+        <div class="card-title">Customer Profiles</div>
+        <div class="card-actions">
+            <input type="text" id="searchBox" placeholder="🔍 Search customers..." class="form-input" style="width: 250px;" onkeyup="searchTable()">
+        </div>
+    </div>
+    
+    <div class="table-container">
+        <table id="profilesTable">
+            <thead>
+                <tr>
+                    <th>Profile ID</th>
+                    <th>Customer Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Date of Birth</th>
+                    <th style="text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var profile in Model)
+                {
+                    <tr>
+                        <td><strong>#@profile.ProfileId</strong></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="user-avatar" style="width: 32px; height: 32px; font-size: 12px;">
+                                    @(profile.User?.FullName?.Substring(0, 2).ToUpper() ?? "NA")
+                                </div>
+                                <strong>@profile.User?.FullName</strong>
+                            </div>
+                        </td>
+                        <td>@profile.User?.Email</td>
+                        <td>📱 @(profile.Phone ?? "N/A")</td>
+                        <td>📍 @(profile.Address ?? "N/A")</td>
+                        <td>🎂 @(profile.DateOfBirth?.ToString("MMM dd, yyyy") ?? "N/A")</td>
+                        <td>
+                            <div class="action-buttons" style="justify-content: center;">
+                                <button class="btn-edit" onclick="editProfile(@profile.ProfileId, '@(profile.Phone?.Replace("'", "\\'") ?? "")', '@(profile.Address?.Replace("'", "\\'")?.Replace("\n", " ") ?? "")', '@(profile.DateOfBirth?.ToString("yyyy-MM-dd") ?? "")')">
+                                    ✏️ Edit
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title">✏️ Edit Customer Profile</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <form id="editForm" method="post" action="@Url.Action("UpdateCustomerProfile", "Admin")">
+            <input type="hidden" id="editProfileId" name="profileId">
+            
+            <div class="form-group">
+                <label for="editPhone">📱 Phone Number</label>
+                <input type="tel" class="form-input" id="editPhone" name="phone" placeholder="+1 (555) 123-4567">
+            </div>
+            
+            <div class="form-group">
+                <label for="editAddress">📍 Address</label>
+                <textarea class="form-input" id="editAddress" name="address" rows="3" placeholder="Enter complete address"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="editDateOfBirth">🎂 Date of Birth</label>
+                <input type="date" class="form-input" id="editDateOfBirth" name="dateOfBirth">
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">💾 Save Changes</button>
+                <button type="button" class="btn btn-outline" style="flex: 1;" onclick="closeModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function editProfile(profileId, phone, address, dateOfBirth) {
+    document.getElementById('editProfileId').value = profileId;
+    document.getElementById('editPhone').value = phone;
+    document.getElementById('editAddress').value = address;
+    document.getElementById('editDateOfBirth').value = dateOfBirth;
+    document.getElementById('editModal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('editModal').classList.remove('active');
+}
+
+function searchTable() {
+    const input = document.getElementById('searchBox');
+    const filter = input.value.toUpperCase();
+    const table = document.getElementById('profilesTable');
+    const tr = table.getElementsByTagName('tr');
+    
+    for (let i = 1; i < tr.length; i++) {
+        let txtValue = tr[i].textContent || tr[i].innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            tr[i].style.display = '';
+        } else {
+            tr[i].style.display = 'none';
+        }
+    }
+}
+
+// Close modal when clicking outside
+document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
+</script>

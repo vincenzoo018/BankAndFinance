@@ -1,0 +1,43 @@
+@model IEnumerable<BankAndFinance.Models.Payment>
+
+@{
+    ViewBag.Title = "Payments";
+    ViewBag.PageTitle = "Bill Payments";
+    ViewBag.Breadcrumb = "Home / Banking / Bill Payments";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Bill Payment History</div>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Payment ID</th>
+                    <th>Account Number</th>
+                    <th>Biller</th>
+                    <th>Amount</th>
+                    <th>Payment Date</th>
+                    <th>Status</th>
+                    <th>Reference</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var payment in Model)
+                {
+                    <tr>
+                        <td>#PAY@payment.PaymentId</td>
+                        <td>@payment.BankAccount?.AccountNumber</td>
+                        <td>@payment.Biller?.BillerName</td>
+                        <td><strong>$@payment.Amount.ToString("N2")</strong></td>
+                        <td>@payment.PaymentDate.ToString("yyyy-MM-dd hh:mm tt")</td>
+                        <td><span class="status-badge status-@payment.Status.ToLower()">@payment.Status</span></td>
+                        <td>@payment.ReferenceNumber</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

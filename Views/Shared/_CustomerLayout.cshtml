@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - BFAS Customer</title>
+    <link rel="stylesheet" href="~/css/modern-theme.css">
+    <link rel="stylesheet" href="~/css/responsive.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Windsurf-Inspired Color Palette */
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #818cf8;
+            --secondary: #06b6d4;
+            --secondary-dark: #0891b2;
+            --accent: #8b5cf6;
+            --accent-dark: #7c3aed;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #64748b;
+            --border: #e2e8f0;
+        }
+
+        /* Customer-specific navbar styles */
+        .customer-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-bottom: none;
+            box-shadow: 0 4px 24px rgba(99, 102, 241, 0.2);
+            z-index: 1000;
+            padding: 0 32px;
+            backdrop-filter: blur(10px);
+        }
+
+        .navbar-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 70px;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .brand-text h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+        }
+
+        .brand-text p {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .navbar-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-link {
+            padding: 10px 20px;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .customer-balance {
+            background: var(--bg-tertiary);
+            padding: 8px 16px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .balance-label {
+            font-size: 11px;
+            color: var(--text-light);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .balance-amount {
+            font-size: 16px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #10b981, #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: relative;
+        }
+
+        .profile-trigger {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .profile-trigger:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .profile-name {
+            font-weight: 600;
+            color: white;
+            font-size: 14px;
+        }
+
+        .profile-role {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .dropdown-arrow {
+            font-size: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .profile-dropdown.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            min-width: 280px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+        }
+
+        .profile-dropdown.active .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-header {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 16px 16px 0 0;
+            color: white;
+        }
+
+        .dropdown-header-name {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .dropdown-header-email {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .dropdown-balance {
+            padding: 16px 20px;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .dropdown-balance-label {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .dropdown-balance-amount {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--success), #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .dropdown-items {
+            padding: 8px;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #1e293b;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .dropdown-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--primary);
+            transform: translateX(4px);
+        }
+
+        .dropdown-item-icon {
+            font-size: 18px;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 8px 0;
+        }
+
+        .dropdown-logout {
+            color: #ef4444;
+        }
+
+        .dropdown-logout:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* Toast Notification Styles */
+        .toast-container {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            min-width: 320px;
+            background: white;
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .toast.success {
+            border-left-color: #10b981;
+        }
+
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+
+        .toast.info {
+            border-left-color: #3b82f6;
+        }
+
+        .toast.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .toast-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 2px;
+            color: #1e293b;
+        }
+
+        .toast-message {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .toast-close:hover {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        @@keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @@keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .toast.hiding {
+            animation: slideOut 0.3s ease forwards;
+        }
+
+        /* Confirmation Dialog Styles */
+        .confirm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .confirm-overlay.active {
+            display: flex;
+        }
+
+        .confirm-dialog {
+            background: white;
+            border-radius: 16px;
+            padding: 0;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: scaleIn 0.3s ease;
+        }
+
+        .confirm-header {
+            padding: 24px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .confirm-icon {
+            font-size: 32px;
+        }
+
+        .confirm-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .confirm-body {
+            padding: 24px;
+        }
+
+        .confirm-message {
+            font-size: 15px;
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .confirm-details {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+
+        .confirm-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .confirm-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .confirm-detail-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .confirm-detail-value {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 14px;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 12px;
+            padding: 20px 24px;
+            background: #f8fafc;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .confirm-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .confirm-btn-yes {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .confirm-btn-yes:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .confirm-btn-no {
+            background: white;
+            color: #64748b;
+            border: 2px solid #e2e8f0;
+        }
+
+        .confirm-btn-no:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        @@keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @@keyframes scaleIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .customer-content {
+            margin-top: 70px;
+            padding: 32px;
+            min-height: calc(100vh - 70px);
+            background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
+        }
+
+        .content-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Mobile menu toggle */
+        .mobile-menu-btn {
+            display: none;
+            width: 40px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        @@media (max-width: 968px) {
+            .navbar-menu {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                right: 0;
+                background: white;
+                flex-direction: column;
+                padding: 16px;
+                box-shadow: var(--shadow-lg);
+                transform: translateY(-100%);
+                opacity: 0;
+                transition: all 0.3s ease;
+                pointer-events: none;
+            }
+
+            .navbar-menu.active {
+                transform: translateY(0);
+                opacity: 1;
+                pointer-events: all;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .customer-balance {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Modern Navbar -->
+    <nav class="customer-navbar">
+        <div class="navbar-container">
+            <a href="@Url.Action("Dashboard", "Customer")" class="navbar-brand">
+                <div class="brand-icon">🏦</div>
+                <div class="brand-text">
+                    <h2>BFAS</h2>
+                    <p>Customer Portal</p>
+                </div>
+            </a>
+
+            <div class="navbar-menu" id="navbarMenu">
+                <a class="nav-link" href="@Url.Action("Dashboard", "Customer")">
+                    <span>📊</span> Dashboard
+                </a>
+                <a class="nav-link" href="@Url.Action("Transactions", "Customer")">
+                    <span>💸</span> Transactions
+                </a>
+                <a class="nav-link" href="@Url.Action("MyCards", "Card")">
+                    <span>💳</span> My Cards
+                </a>
+                <a class="nav-link" href="@Url.Action("Deposit", "Customer")">
+                    <span>💰</span> Deposit
+                </a>
+                <a class="nav-link" href="@Url.Action("Withdraw", "Customer")">
+                    <span>💵</span> Withdraw
+                </a>
+                <a class="nav-link" href="@Url.Action("Transfer", "Customer")">
+                    <span>🔄</span> Transfer
+                </a>
+                <a class="nav-link" href="@Url.Action("PayBills", "Customer")">
+                    <span>📄</span> Pay Bills
+                </a>
+                <a class="nav-link" href="@Url.Action("Goals", "Savings")">
+                    <span>💰</span> Savings Goals
+                </a>
+                <a class="nav-link" href="@Url.Action("Index", "Notification")">
+                    <span>🔔</span> Notifications
+                </a>
+            </div>
+
+            <div class="navbar-actions">
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="profile-trigger" onclick="toggleProfileDropdown()">
+                        <div class="profile-avatar">@(Context.Session.GetString("UserName")?.Substring(0, 2).ToUpper() ?? "CU")</div>
+                        <div class="profile-info">
+                            <div class="profile-name">@Context.Session.GetString("UserName")</div>
+                            <div class="profile-role">Customer</div>
+                        </div>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    
+                    <div class="dropdown-menu">
+                        <div class="dropdown-header">
+                            <div class="dropdown-header-name">@Context.Session.GetString("UserName")</div>
+                            <div class="dropdown-header-email">@Context.Session.GetString("UserEmail")</div>
+                        </div>
+                        
+                        <div class="dropdown-balance">
+                            <div>
+                                <div class="dropdown-balance-label">💰 Account Balance</div>
+                            </div>
+                            <div class="dropdown-balance-amount">$@(ViewBag.Balance?.ToString("N2") ?? "0.00")</div>
+                        </div>
+                        
+                        <div class="dropdown-items">
+                            <a href="@Url.Action("Profile", "Customer")" class="dropdown-item">
+                                <span class="dropdown-item-icon">👤</span>
+                                My Profile
+                            </a>
+                            <a href="@Url.Action("Transactions", "Customer")" class="dropdown-item">
+                                <span class="dropdown-item-icon">💸</span>
+                                My Transactions
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="@Url.Action("Logout", "Auth")" class="dropdown-item dropdown-logout">
+                                <span class="dropdown-item-icon">🚪</span>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="customer-content">
+        <div class="content-wrapper">
+            @RenderBody()
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        // Toast Notification System
+        function showToast(type, title, message, duration = 5000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: '✅',
+                error: '❌',
+                info: 'ℹ️',
+                warning: '⚠️'
+            };
+            
+            toast.innerHTML = `
+                <div class="toast-icon">${icons[type]}</div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // Check for TempData messages on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Highlight active menu item
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Show toast notifications from TempData
+            @if(TempData["Success"] != null)
+            {
+                <text>
+                showToast('success', 'Success!', '@TempData["Success"]');
+                </text>
+            }
+            @if(TempData["Error"] != null)
+            {
+                <text>
+                showToast('error', 'Error!', '@TempData["Error"]');
+                </text>
+            }
+            @if(TempData["Info"] != null)
+            {
+                <text>
+                showToast('info', 'Information', '@TempData["Info"]');
+                </text>
+            }
+            @if(TempData["Warning"] != null)
+            {
+                <text>
+                showToast('warning', 'Warning!', '@TempData["Warning"]');
+                </text>
+            }
+        });
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            document.getElementById('navbarMenu').classList.toggle('active');
+        }
+
+        // Toggle profile dropdown
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        // Close mobile menu and dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('navbarMenu');
+            const btn = document.querySelector('.mobile-menu-btn');
+            const profileDropdown = document.getElementById('profileDropdown');
+            const profileTrigger = document.querySelector('.profile-trigger');
+            
+            if (!menu.contains(event.target) && !btn.contains(event.target)) {
+                menu.classList.remove('active');
+            }
+            
+            if (!profileDropdown.contains(event.target)) {
+                profileDropdown.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+@{
+    ViewBag.Title = "Dashboard";
+    ViewBag.PageTitle = "Dashboard Overview";
+    ViewBag.Breadcrumb = "Home / Dashboard";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success fade-in" style="background: #dcfce7; color: #16a34a; padding: 16px 20px; border-radius: 12px; margin-bottom: 24px; border-left: 4px solid #16a34a; display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 20px;">✅</span>
+        <strong>@TempData["Success"]</strong>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-error fade-in" style="background: #fee2e2; color: #dc2626; padding: 16px 20px; border-radius: 12px; margin-bottom: 24px; border-left: 4px solid #dc2626; display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 20px;">❌</span>
+        <strong>@TempData["Error"]</strong>
+    </div>
+}
+
+<!-- Quick Actions -->
+<div class="card fade-in" style="margin-bottom: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+    <div style="padding: 24px;">
+        <h3 style="margin-bottom: 8px; font-size: 18px;">👋 Welcome back, @Context.Session.GetString("UserName")!</h3>
+        <p style="opacity: 0.9; margin-bottom: 20px;">Here's what's happening with your system today</p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="@Url.Action("Users", "Admin")" class="btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">👥 Manage Users</a>
+            <a href="@Url.Action("Transactions", "Admin")" class="btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">💳 View Transactions</a>
+            <a href="@Url.Action("AuditLogs", "Admin")" class="btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">📋 Audit Logs</a>
+        </div>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card slide-in">
+        <div class="stat-header">
+            <div class="stat-icon blue">👥</div>
+            <div class="stat-trend up">+12%</div>
+        </div>
+        <div class="stat-label">Total Users</div>
+        <div class="stat-value">@ViewBag.TotalUsers</div>
+        <div class="stat-change">📈 Growing steadily</div>
+    </div>
+    <div class="stat-card slide-in" style="animation-delay: 0.1s;">
+        <div class="stat-header">
+            <div class="stat-icon green">🏦</div>
+            <div class="stat-trend up">+8%</div>
+        </div>
+        <div class="stat-label">Bank Accounts</div>
+        <div class="stat-value">@ViewBag.TotalAccounts</div>
+        <div class="stat-change">✅ All active</div>
+    </div>
+    <div class="stat-card slide-in" style="animation-delay: 0.2s;">
+        <div class="stat-header">
+            <div class="stat-icon yellow">💰</div>
+            <div class="stat-trend up">+15%</div>
+        </div>
+        <div class="stat-label">Total Balance</div>
+        <div class="stat-value">$@ViewBag.TotalBalance?.ToString("N2")</div>
+        <div class="stat-change">💹 System balance</div>
+    </div>
+    <div class="stat-card slide-in" style="animation-delay: 0.3s;">
+        <div class="stat-header">
+            <div class="stat-icon purple">💸</div>
+            <div class="stat-trend up">+24</div>
+        </div>
+        <div class="stat-label">Today's Transactions</div>
+        <div class="stat-value">@ViewBag.TodayTransactions</div>
+        <div class="stat-change">🔥 Very active</div>
+    </div>
+</div>
+
+<div class="content-grid">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Recent Transactions</div>
+            <a href="@Url.Action("Transactions", "Admin")" class="view-all-btn">View All</a>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Account Number</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.RecentTransactions != null)
+                    {
+                        @foreach (var transaction in ViewBag.RecentTransactions)
+                        {
+                            <tr>
+                                <td>#TXN@transaction.TransactionId</td>
+                                <td>@transaction.BankAccount?.AccountNumber</td>
+                                <td>@transaction.TransactionType</td>
+                                <td>$@transaction.Amount.ToString("N2")</td>
+                                <td>@transaction.TransactionDate.ToString("yyyy-MM-dd")</td>
+                                <td><span class="status-badge status-@transaction.Status.ToLower()">@transaction.Status</span></td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" style="text-align: center;">No recent transactions</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Recent Activity</div>
+        </div>
+        <div style="padding: 20px;">
+            @if (ViewBag.RecentActivities != null)
+            {
+                @foreach (var activity in ViewBag.RecentActivities)
+                {
+                    <div style="display: flex; gap: 16px; padding: 16px; background: #f8fafc; border-radius: 12px; margin-bottom: 12px; transition: all 0.2s ease; cursor: pointer;" onmouseover="this.style.background='#f1f5f9'; this.style.transform='translateX(4px)';" onmouseout="this.style.background='#f8fafc'; this.style.transform='translateX(0)';">
+                        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">📋</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: #1e293b; margin-bottom: 4px;">@activity.Action</div>
+                            <div style="font-size: 13px; color: #64748b;">
+                                <strong>@activity.User?.FullName</strong> • @activity.Module
+                            </div>
+                            <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">🕐 @activity.Timestamp.ToString("MMM dd, yyyy hh:mm tt")</div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p style="text-align: center; color: #64748b; padding: 40px;">No recent activities</p>
+            }
+        </div>
+    </div>
+</div>

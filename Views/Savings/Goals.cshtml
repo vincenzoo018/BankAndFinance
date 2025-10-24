@@ -1,0 +1,311 @@
+@model List<BankAndFinance.Models.SavingsGoal>
+
+@{
+    ViewBag.Title = "Savings Goals";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<style>
+    .goals-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 24px;
+        margin-top: 24px;
+    }
+
+    .goal-card {
+        background: white;
+        border-radius: 20px;
+        padding: 28px;
+        border: 2px solid #e2e8f0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .goal-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(to right, #10b981, #059669);
+    }
+
+    .goal-card.completed::before {
+        background: linear-gradient(to right, #f59e0b, #d97706);
+    }
+
+    .goal-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        margin: 0 auto 20px;
+    }
+
+    .goal-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-primary);
+        text-align: center;
+        margin-bottom: 8px;
+    }
+
+    .goal-amount {
+        text-align: center;
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 20px;
+    }
+
+    .progress-bar-container {
+        width: 100%;
+        height: 12px;
+        background: #e2e8f0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 20px 0;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(to right, #10b981, #059669);
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+
+    .progress-percentage {
+        text-align: center;
+        font-size: 28px;
+        font-weight: 700;
+        color: #10b981;
+        margin: 12px 0;
+    }
+
+    .goal-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 20px;
+    }
+
+    @@media (max-width: 767px) {
+        .goals-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">💰 My Savings Goals</div>
+        <button class="btn btn-primary" onclick="showCreateModal()">➕ Create Goal</button>
+    </div>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    <div class="goals-grid">
+        @foreach (var goal in Model)
+        {
+            <div class="goal-card @(goal.Status == "Completed" ? "completed" : "")">
+                <div class="goal-icon">
+                    @if (goal.Status == "Completed")
+                    {
+                        <span>🎉</span>
+                    }
+                    else
+                    {
+                        <span>💰</span>
+                    }
+                </div>
+                
+                <div class="goal-name">@goal.GoalName</div>
+                
+                <div class="goal-amount">
+                    $@goal.CurrentAmount.ToString("N2") of $@goal.TargetAmount.ToString("N2")
+                </div>
+
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" style="width: @goal.ProgressPercentage%"></div>
+                </div>
+
+                <div class="progress-percentage">
+                    @goal.ProgressPercentage.ToString("F0")%
+                </div>
+
+                @if (goal.TargetDate.HasValue)
+                {
+                    var daysLeft = (goal.TargetDate.Value - DateTime.Now).Days;
+                    <div style="text-align: center; color: var(--text-tertiary); font-size: 13px; margin-bottom: 16px;">
+                        📅 @(daysLeft > 0 ? $"{daysLeft} days left" : "Target date passed")
+                    </div>
+                }
+
+                <div class="goal-actions">
+                    @if (goal.Status != "Completed")
+                    {
+                        <button class="btn btn-primary" style="flex: 1;" onclick="addToGoal(@goal.GoalId, '@goal.GoalName')">
+                            ➕ Add Money
+                        </button>
+                    }
+                    @if (goal.CurrentAmount > 0)
+                    {
+                        <button class="btn btn-outline" style="flex: 1;" onclick="withdrawGoal(@goal.GoalId, '@goal.GoalName', @goal.CurrentAmount)">
+                            💸 Withdraw
+                        </button>
+                    }
+                    <button class="btn btn-outline" style="color: #ef4444; border-color: #ef4444;" onclick="deleteGoal(@goal.GoalId, '@goal.GoalName')">
+                        🗑️
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 16px; margin-top: 24px;">
+        <div style="font-size: 64px; margin-bottom: 20px;">💰</div>
+        <h3>No Savings Goals Yet</h3>
+        <p style="color: #64748b; margin: 16px 0;">Start saving for your dreams today!</p>
+        <button class="btn btn-primary" onclick="showCreateModal()">➕ Create Your First Goal</button>
+    </div>
+}
+
+<!-- Create Goal Modal -->
+<div class="modal-overlay" id="createModal">
+    <div class="modal">
+        <div class="modal-header" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">
+            <h3 class="modal-title">💰 Create Savings Goal</h3>
+            <button class="modal-close" onclick="closeCreateModal()">&times;</button>
+        </div>
+        <form method="post" asp-action="CreateGoal">
+            <div class="form-group">
+                <label for="goalName">Goal Name</label>
+                <input type="text" class="form-input" id="goalName" name="goalName" required placeholder="Dream Vacation, New Car, etc.">
+            </div>
+            
+            <div class="form-group">
+                <label for="targetAmount">Target Amount</label>
+                <input type="number" class="form-input" id="targetAmount" name="targetAmount" step="0.01" min="1" required placeholder="5000.00" style="font-size: 20px;">
+            </div>
+            
+            <div class="form-group">
+                <label for="targetDate">Target Date (Optional)</label>
+                <input type="date" class="form-input" id="targetDate" name="targetDate">
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">✅ Create Goal</button>
+                <button type="button" class="btn btn-outline" style="flex: 1;" onclick="closeCreateModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add Money Modal -->
+<div class="modal-overlay" id="addMoneyModal">
+    <div class="modal">
+        <div class="modal-header" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">
+            <h3 class="modal-title">➕ Add Money to Goal</h3>
+            <button class="modal-close" onclick="closeAddMoneyModal()">&times;</button>
+        </div>
+        <form method="post" asp-action="AddToGoal">
+            <input type="hidden" id="addGoalId" name="goalId">
+            
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div style="font-size: 48px; margin-bottom: 12px;">💰</div>
+                <div id="addGoalName" style="font-size: 20px; font-weight: 600;"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="addAmount">Amount to Add</label>
+                <input type="number" class="form-input" id="addAmount" name="amount" step="0.01" min="0.01" required placeholder="0.00" style="font-size: 24px; text-align: center;">
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">➕ Add Money</button>
+                <button type="button" class="btn btn-outline" style="flex: 1;" onclick="closeAddMoneyModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showCreateModal() {
+    document.getElementById('createModal').classList.add('active');
+}
+
+function closeCreateModal() {
+    document.getElementById('createModal').classList.remove('active');
+}
+
+function addToGoal(goalId, name) {
+    document.getElementById('addGoalId').value = goalId;
+    document.getElementById('addGoalName').textContent = name;
+    document.getElementById('addAmount').value = '';
+    document.getElementById('addMoneyModal').classList.add('active');
+}
+
+function closeAddMoneyModal() {
+    document.getElementById('addMoneyModal').classList.remove('active');
+}
+
+function withdrawGoal(goalId, name, amount) {
+    if (confirm(`Withdraw from "${name}"? Current amount: $${amount.toFixed(2)}`)) {
+        const withdrawAmount = prompt('Enter amount to withdraw:', amount.toFixed(2));
+        if (withdrawAmount) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '@Url.Action("WithdrawFromGoal", "Savings")';
+            
+            const goalInput = document.createElement('input');
+            goalInput.type = 'hidden';
+            goalInput.name = 'goalId';
+            goalInput.value = goalId;
+            
+            const amountInput = document.createElement('input');
+            amountInput.type = 'hidden';
+            amountInput.name = 'amount';
+            amountInput.value = withdrawAmount;
+            
+            form.appendChild(goalInput);
+            form.appendChild(amountInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+}
+
+function deleteGoal(goalId, name) {
+    if (confirm(`Are you sure you want to delete the "${name}" goal? Any saved amount will be returned to your account.`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '@Url.Action("DeleteGoal", "Savings")';
+        
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'goalId';
+        input.value = goalId;
+        
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Close modals
+document.getElementById('createModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeCreateModal();
+});
+
+document.getElementById('addMoneyModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeAddMoneyModal();
+});
+</script>

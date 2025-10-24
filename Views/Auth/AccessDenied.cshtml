@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Denied - BFAS</title>
+    <link rel="stylesheet" href="~/css/bfas-style.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-logo">
+                <h1 style="color: #ef4444;">Access Denied</h1>
+                <p>You don't have permission to access this page</p>
+            </div>
+
+            <div class="error-message">
+                You are not authorized to view this page. Please contact your system administrator if you believe this is an error.
+            </div>
+
+            <a href="@Url.Action("Logout", "Auth")" class="btn-login">Back to Login</a>
+        </div>
+    </div>
+</body>
+</html>

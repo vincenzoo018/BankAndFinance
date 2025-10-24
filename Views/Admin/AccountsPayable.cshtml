@@ -1,0 +1,44 @@
+@model IEnumerable<BankAndFinance.Models.AccountsPayable>
+
+@{
+    ViewBag.Title = "Accounts Payable";
+    ViewBag.PageTitle = "Accounts Payable";
+    ViewBag.Breadcrumb = "Home / Finance / Accounts Payable";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Accounts Payable</div>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>AP ID</th>
+                    <th>Payee Name</th>
+                    <th>Amount</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Created By</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ap in Model)
+                {
+                    var daysUntilDue = (ap.DueDate - DateTime.Now).Days;
+                    var statusClass = ap.Status == "Paid" ? "completed" : (daysUntilDue < 0 ? "overdue" : "pending");
+                    
+                    <tr>
+                        <td>#AP@ap.ApId</td>
+                        <td>@ap.PayeeName</td>
+                        <td><strong>$@ap.Amount.ToString("N2")</strong></td>
+                        <td>@ap.DueDate.ToString("yyyy-MM-dd")</td>
+                        <td><span class="status-badge status-@statusClass">@ap.Status</span></td>
+                        <td>@ap.Creator?.FullName</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

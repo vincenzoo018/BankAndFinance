@@ -1,0 +1,35 @@
+@model IEnumerable<BankAndFinance.Models.Branch>
+
+@{
+    ViewBag.Title = "Branches";
+    ViewBag.PageTitle = "Branch Management";
+    ViewBag.Breadcrumb = "Home / Administration / Branches";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Bank Branches</div>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Branch ID</th>
+                    <th>Branch Name</th>
+                    <th>Location</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var branch in Model)
+                {
+                    <tr>
+                        <td>#@branch.BranchId</td>
+                        <td><strong>@branch.BranchName</strong></td>
+                        <td>@branch.Location</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

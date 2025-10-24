@@ -1,0 +1,154 @@
+@{
+    ViewBag.Title = "Withdraw";
+    ViewBag.PageTitle = "Withdraw Money";
+    ViewBag.Breadcrumb = "Home / Banking / Withdraw";
+}
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <div class="card-header">
+        <div class="card-title">Withdraw Money</div>
+    </div>
+    
+    <div style="padding: 20px;">
+        @if (ViewBag.Error != null)
+        {
+            <div class="error-message">
+                @ViewBag.Error
+            </div>
+        }
+        
+        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span style="color: #64748b; font-size: 14px;">Account Number:</span>
+                <strong style="color: #1e293b;">@ViewBag.AccountNumber</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #64748b; font-size: 14px;">Available Balance:</span>
+                <strong style="color: #3dd598; font-size: 20px;">$@ViewBag.CurrentBalance?.ToString("N2")</strong>
+            </div>
+        </div>
+        
+        <form method="post" asp-action="Withdraw" asp-controller="Customer" id="withdrawForm" onsubmit="return false;">
+            <div class="form-group">
+                <label for="amount">Withdrawal Amount</label>
+                <input type="number" class="form-input" id="amount" name="amount" step="0.01" min="0.01" required placeholder="Enter amount to withdraw" style="font-size: 18px; padding: 15px;">
+            </div>
+            
+            <div class="form-group">
+                <label for="paymentMode">Payment Mode</label>
+                <select class="form-select" id="paymentMode" name="paymentMode" required style="padding: 12px;">
+                    <option value="Cash">💵 Cash</option>
+                    <option value="Card">💳 Card</option>
+                    <option value="QR Code">📱 QR Code</option>
+                    <option value="Bank Transfer">🏦 Bank Transfer</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="qrSection" style="display: none;">
+                <label>Scan QR Code</label>
+                <div style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 12px;">
+                    <div style="font-size: 120px;">📱</div>
+                    <p style="color: #64748b; margin-top: 12px;">QR Code: <span id="qrCodeText">WITHDRAW-@DateTime.Now.Ticks</span></p>
+                    <input type="hidden" id="qrCode" name="qrCode" value="">
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <button type="button" onclick="showWithdrawConfirmation()" class="btn-submit" style="width: 100%; padding: 15px; font-size: 16px; background: #f59e0b;">💸 Withdraw Money</button>
+                <a href="@Url.Action("Dashboard", "Customer")" class="btn-cancel" style="width: 100%; text-align: center; margin-top: 10px; display: block; padding: 12px;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Confirmation Dialog -->
+<div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-dialog">
+        <div class="confirm-header" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+            <div class="confirm-icon">💵</div>
+            <div class="confirm-title">Confirm Withdrawal</div>
+        </div>
+        <div class="confirm-body">
+            <div class="confirm-message">
+                Are you sure you want to withdraw this amount from your account?
+            </div>
+            <div class="confirm-details">
+                <div class="confirm-detail-row">
+                    <span class="confirm-detail-label">Account Number:</span>
+                    <span class="confirm-detail-value">@ViewBag.AccountNumber</span>
+                </div>
+                <div class="confirm-detail-row">
+                    <span class="confirm-detail-label">Available Balance:</span>
+                    <span class="confirm-detail-value">$@ViewBag.CurrentBalance?.ToString("N2")</span>
+                </div>
+                <div class="confirm-detail-row">
+                    <span class="confirm-detail-label">Withdrawal Amount:</span>
+                    <span class="confirm-detail-value" id="confirmAmount" style="color: #f59e0b;">$0.00</span>
+                </div>
+                <div class="confirm-detail-row">
+                    <span class="confirm-detail-label">Remaining Balance:</span>
+                    <span class="confirm-detail-value" id="confirmNewBalance" style="font-size: 16px;">$0.00</span>
+                </div>
+            </div>
+        </div>
+        <div class="confirm-actions">
+            <button type="button" class="confirm-btn confirm-btn-yes" style="background: linear-gradient(135deg, #f59e0b, #d97706);" onclick="submitWithdraw()">✅ Yes, Withdraw</button>
+            <button type="button" class="confirm-btn confirm-btn-no" onclick="closeConfirmation()">❌ Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Show/hide QR section
+document.getElementById('paymentMode')?.addEventListener('change', function() {
+    const qrSection = document.getElementById('qrSection');
+    const qrCodeInput = document.getElementById('qrCode');
+    const qrCodeText = document.getElementById('qrCodeText').textContent;
+    
+    if (this.value === 'QR Code') {
+        qrSection.style.display = 'block';
+        qrCodeInput.value = qrCodeText;
+    } else {
+        qrSection.style.display = 'none';
+        qrCodeInput.value = '';
+    }
+});
+
+function showWithdrawConfirmation() {
+    const form = document.getElementById('withdrawForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    const amount = parseFloat(document.getElementById('amount').value);
+    const currentBalance = parseFloat('@ViewBag.CurrentBalance');
+    const newBalance = currentBalance - amount;
+    
+    if (amount > currentBalance) {
+        alert('Insufficient balance for this withdrawal.');
+        return;
+    }
+    
+    document.getElementById('confirmAmount').textContent = '$' + amount.toFixed(2);
+    document.getElementById('confirmNewBalance').textContent = '$' + newBalance.toFixed(2);
+    document.getElementById('confirmOverlay').classList.add('active');
+}
+
+function closeConfirmation() {
+    document.getElementById('confirmOverlay').classList.remove('active');
+}
+
+function submitWithdraw() {
+    const form = document.getElementById('withdrawForm');
+    form.onsubmit = null;
+    form.submit();
+}
+
+// Close on overlay click
+document.getElementById('confirmOverlay')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeConfirmation();
+    }
+});
+</script>

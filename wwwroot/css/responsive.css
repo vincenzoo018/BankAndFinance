@@ -1,0 +1,670 @@
+/* ================================================
+   RESPONSIVE DESIGN - Mobile, Tablet, Desktop
+   ================================================ */
+
+/* CSS Variables for Consistent Breakpoints */
+:root {
+    /* Breakpoints */
+    --mobile-xs: 320px;
+    --mobile-sm: 375px;
+    --mobile-md: 425px;
+    --tablet: 768px;
+    --laptop: 1024px;
+    --desktop: 1440px;
+    --desktop-lg: 1920px;
+
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-xxl: 48px;
+}
+
+/* ================================================
+   BASE RESPONSIVE UTILITIES
+   ================================================ */
+
+* {
+    box-sizing: border-box;
+}
+
+img, video {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Prevent horizontal scroll */
+body {
+    overflow-x: hidden;
+}
+
+/* ================================================
+   MOBILE FIRST - EXTRA SMALL (320px - 374px)
+   iPhone SE, Galaxy Fold
+   ================================================ */
+
+@media (max-width: 374px) {
+    body {
+        font-size: 14px;
+    }
+
+    .navbar-container {
+        padding: 0 var(--spacing-sm) !important;
+    }
+
+    .brand-text h2 {
+        font-size: 16px !important;
+    }
+
+    .brand-icon {
+        width: 35px !important;
+        height: 35px !important;
+        font-size: 18px !important;
+    }
+
+    .nav-link {
+        font-size: 12px !important;
+        padding: 8px 12px !important;
+    }
+
+    .card {
+        margin: var(--spacing-sm);
+        padding: var(--spacing-md);
+    }
+
+    .card-title {
+        font-size: 16px !important;
+    }
+
+    .btn, .btn-primary, .btn-secondary {
+        padding: 10px 16px !important;
+        font-size: 13px !important;
+    }
+
+    table {
+        font-size: 12px;
+    }
+
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .form-input, .form-select {
+        font-size: 14px !important;
+    }
+}
+
+/* ================================================
+   MOBILE SMALL (375px - 424px)
+   iPhone 12/13/14, Galaxy S21
+   ================================================ */
+
+@media (min-width: 375px) and (max-width: 424px) {
+    .customer-content, .admin-content, .employee-content {
+        padding: var(--spacing-md) !important;
+    }
+
+    .navbar-menu {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        background: white;
+        flex-direction: column;
+        padding: var(--spacing-md);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        transform: translateY(-100%);
+        opacity: 0;
+        transition: all 0.3s ease;
+        pointer-events: none;
+        z-index: 999;
+    }
+
+    .navbar-menu.active {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    .nav-link {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 12px 16px !important;
+        border-radius: 8px;
+    }
+
+    .mobile-menu-btn {
+        display: flex !important;
+    }
+
+    .profile-dropdown .dropdown-menu {
+        right: 0;
+        left: auto;
+        min-width: 280px;
+    }
+
+    /* Cards */
+    .card {
+        border-radius: 12px;
+        margin-bottom: var(--spacing-md);
+    }
+
+    /* Stat Cards */
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+        gap: var(--spacing-md);
+    }
+
+    .stat-card {
+        padding: var(--spacing-md);
+    }
+
+    /* Forms */
+    .form-row {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .form-group {
+        width: 100% !important;
+    }
+
+    /* Buttons */
+    .action-buttons {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .action-buttons button,
+    .action-buttons a {
+        width: 100%;
+    }
+
+    /* Tables - Horizontal Scroll */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 calc(var(--spacing-md) * -1);
+        padding: 0 var(--spacing-md);
+    }
+
+    table {
+        min-width: 600px;
+        font-size: 13px;
+    }
+
+    th, td {
+        padding: 10px 8px;
+        white-space: nowrap;
+    }
+
+    /* Modal */
+    .modal {
+        width: 95%;
+        margin: var(--spacing-md);
+    }
+
+    .confirm-dialog {
+        width: 95%;
+    }
+}
+
+/* ================================================
+   MOBILE MEDIUM (425px - 767px)
+   iPhone 14 Pro Max, Pixel 7
+   ================================================ */
+
+@media (min-width: 425px) and (max-width: 767px) {
+    .customer-navbar, .admin-navbar, .employee-navbar {
+        padding: 0 var(--spacing-md) !important;
+    }
+
+    .customer-content {
+        padding: var(--spacing-lg) !important;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: var(--spacing-md);
+    }
+
+    .card {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .table-container {
+        border-radius: 12px;
+    }
+
+    /* Navbar remains collapsed */
+    .navbar-menu {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        background: white;
+        flex-direction: column;
+        padding: var(--spacing-lg);
+        transform: translateY(-100%);
+        opacity: 0;
+        transition: all 0.3s ease;
+        pointer-events: none;
+    }
+
+    .navbar-menu.active {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    .mobile-menu-btn {
+        display: flex !important;
+    }
+
+    /* Transaction cards - 2 columns */
+    .transaction-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* ================================================
+   TABLET (768px - 1023px)
+   iPad, iPad Mini, Galaxy Tab
+   ================================================ */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    .customer-navbar {
+        padding: 0 var(--spacing-lg) !important;
+    }
+
+    .customer-content {
+        padding: var(--spacing-xl) !important;
+    }
+
+    /* Show navbar items */
+    .navbar-menu {
+        display: flex !important;
+        flex-direction: row;
+        position: static;
+        transform: none;
+        opacity: 1;
+        pointer-events: all;
+        background: transparent;
+        box-shadow: none;
+        padding: 0;
+    }
+
+    .mobile-menu-btn {
+        display: none !important;
+    }
+
+    /* Stats - 2 or 3 columns */
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: var(--spacing-lg);
+    }
+
+    /* Cards */
+    .card {
+        padding: var(--spacing-xl);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    /* Forms - 2 columns */
+    .form-row-tablet {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-lg);
+    }
+
+    /* Tables */
+    .table-container {
+        border-radius: 16px;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+    th, td {
+        padding: 14px 16px;
+    }
+
+    /* Modal */
+    .modal {
+        max-width: 600px;
+    }
+
+    .confirm-dialog {
+        max-width: 500px;
+    }
+
+    /* Dropdown */
+    .profile-dropdown .dropdown-menu {
+        min-width: 300px;
+    }
+
+    /* Side by side layouts */
+    .split-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-xl);
+    }
+}
+
+/* ================================================
+   LAPTOP (1024px - 1439px)
+   MacBook Air, Most Laptops
+   ================================================ */
+
+@media (min-width: 1024px) and (max-width: 1439px) {
+    .content-wrapper {
+        max-width: 1200px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+    }
+
+    .navbar-menu {
+        gap: var(--spacing-sm);
+    }
+
+    .nav-link {
+        padding: 10px 18px;
+        font-size: 14px;
+    }
+
+    /* Tables */
+    table {
+        font-size: 14px;
+    }
+
+    /* Cards - Better spacing */
+    .card {
+        padding: var(--spacing-xl);
+    }
+
+    /* Dashboard grid */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: var(--spacing-xl);
+    }
+
+    /* Forms - Multi-column */
+    .form-grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-lg);
+    }
+}
+
+/* ================================================
+   DESKTOP (1440px - 1919px)
+   MacBook Pro, Most Desktop Monitors
+   ================================================ */
+
+@media (min-width: 1440px) and (max-width: 1919px) {
+    .content-wrapper {
+        max-width: 1400px;
+    }
+
+    .customer-content, .admin-content {
+        padding: var(--spacing-xxl) !important;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: var(--spacing-xl);
+    }
+
+    .stat-card {
+        padding: var(--spacing-xl);
+    }
+
+    .card {
+        padding: var(--spacing-xxl);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .nav-link {
+        padding: 10px 20px;
+        font-size: 15px;
+    }
+
+    /* Large tables */
+    table {
+        font-size: 15px;
+    }
+
+    th, td {
+        padding: 16px 20px;
+    }
+
+    /* Dashboard - Advanced layouts */
+    .dashboard-advanced {
+        display: grid;
+        grid-template-columns: 250px 1fr 350px;
+        gap: var(--spacing-xl);
+    }
+}
+
+/* ================================================
+   LARGE DESKTOP (1920px+)
+   4K Monitors, Ultra-wide
+   ================================================ */
+
+@media (min-width: 1920px) {
+    .content-wrapper {
+        max-width: 1600px;
+    }
+
+    body {
+        font-size: 16px;
+    }
+
+    .customer-content {
+        padding: var(--spacing-xxl) var(--spacing-xxl) !important;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: var(--spacing-xxl);
+    }
+
+    .card {
+        padding: 40px;
+    }
+
+    .card-title {
+        font-size: 24px;
+    }
+
+    table {
+        font-size: 16px;
+    }
+
+    th, td {
+        padding: 18px 24px;
+    }
+}
+
+/* ================================================
+   LANDSCAPE ORIENTATION (Mobile/Tablet)
+   ================================================ */
+
+@media (max-height: 600px) and (orientation: landscape) {
+    .customer-navbar, .admin-navbar {
+        height: 60px !important;
+    }
+
+    .customer-content {
+        margin-top: 60px !important;
+    }
+
+    .navbar-menu {
+        top: 60px !important;
+        max-height: calc(100vh - 60px);
+        overflow-y: auto;
+    }
+
+    .modal, .confirm-dialog {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
+
+/* ================================================
+   TOUCH DEVICES - Better Touch Targets
+   ================================================ */
+
+@media (hover: none) and (pointer: coarse) {
+    /* Larger touch targets */
+    .btn, button, a.nav-link {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    .form-input, .form-select {
+        min-height: 44px;
+        font-size: 16px; /* Prevents iOS zoom on focus */
+    }
+
+    /* Prevent double-tap zoom */
+    * {
+        touch-action: manipulation;
+    }
+
+    /* Better scrolling on iOS */
+    .table-container, .modal-body {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Hover states for touch */
+    .btn:active, .nav-link:active {
+        opacity: 0.8;
+        transform: scale(0.98);
+    }
+}
+
+/* ================================================
+   PRINT STYLES
+   ================================================ */
+
+@media print {
+    .navbar, .sidebar, .mobile-menu-btn,
+    .btn, button, .action-buttons,
+    .filter-bar, .profile-dropdown {
+        display: none !important;
+    }
+
+    body {
+        background: white !important;
+    }
+
+    .customer-content {
+        margin-top: 0 !important;
+        padding: 0 !important;
+    }
+
+    .card {
+        border: 1px solid #e2e8f0;
+        page-break-inside: avoid;
+    }
+
+    table {
+        page-break-inside: auto;
+    }
+
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+}
+
+/* ================================================
+   ACCESSIBILITY - High Contrast Mode
+   ================================================ */
+
+@media (prefers-contrast: high) {
+    .card {
+        border: 2px solid #000;
+    }
+
+    .btn, .nav-link {
+        border: 2px solid currentColor;
+    }
+
+    .dropdown-menu {
+        border: 2px solid #000;
+    }
+}
+
+/* ================================================
+   DARK MODE SUPPORT (Optional)
+   ================================================ */
+
+@media (prefers-color-scheme: dark) {
+    /* Add dark mode styles if needed */
+    body {
+        background: #0f172a;
+        color: #f1f5f9;
+    }
+
+    .card {
+        background: #1e293b;
+        border-color: #334155;
+    }
+
+    .customer-navbar {
+        background: linear-gradient(135deg, #4f46e5 0%, #0891b2 100%);
+    }
+}
+
+/* ================================================
+   UTILITY CLASSES
+   ================================================ */
+
+/* Hide on mobile */
+.hide-mobile {
+    display: none !important;
+}
+
+@media (min-width: 768px) {
+    .hide-mobile {
+        display: block !important;
+    }
+}
+
+/* Hide on desktop */
+.hide-desktop {
+    display: block !important;
+}
+
+@media (min-width: 768px) {
+    .hide-desktop {
+        display: none !important;
+    }
+}
+
+/* Responsive text */
+.text-responsive {
+    font-size: clamp(14px, 2vw, 18px);
+}
+
+/* Responsive spacing */
+.container-responsive {
+    padding: clamp(16px, 4vw, 48px);
+}
+
+/* Safe areas for notched devices (iPhone X+) */
+.safe-area-inset {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}

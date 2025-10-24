@@ -1,0 +1,201 @@
+@model List<BankAndFinance.Models.Card>
+
+@{
+    ViewBag.Title = "My Cards";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<style>
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .credit-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 28px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        min-height: 220px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .credit-card.debit {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        box-shadow: 0 10px 30px rgba(6, 182, 212, 0.4);
+    }
+
+    .credit-card.inactive {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        opacity: 0.7;
+    }
+
+    .card-chip {
+        width: 50px;
+        height: 40px;
+        background: linear-gradient(135deg, #ffd700, #ffed4e);
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .card-number {
+        font-size: 24px;
+        font-family: 'Courier New', monospace;
+        letter-spacing: 3px;
+        margin: 20px 0;
+    }
+
+    .card-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .card-holder, .card-expiry {
+        font-size: 12px;
+        text-transform: uppercase;
+        opacity: 0.8;
+    }
+
+    .card-holder-name, .card-expiry-date {
+        font-size: 16px;
+        font-weight: 600;
+        margin-top: 4px;
+    }
+
+    .card-logo {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 32px;
+    }
+
+    .card-status-badge {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+    }
+
+    .card-actions {
+        margin-top: 16px;
+        display: flex;
+        gap: 12px;
+    }
+
+    .no-cards {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 16px;
+        border: 2px dashed #e2e8f0;
+    }
+
+    .no-cards-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+    }
+
+    @@media (max-width: 767px) {
+        .cards-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .card-number {
+            font-size: 20px;
+        }
+    }
+</style>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">💳 My Cards</div>
+        <a href="@Url.Action("RequestCard")" class="btn btn-primary">➕ Request New Card</a>
+    </div>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    <div class="cards-grid">
+        @foreach (var card in Model)
+        {
+            <div>
+                <div class="credit-card @(card.CardType.ToLower()) @(card.CardStatus == "Inactive" ? "inactive" : "")">
+                    <div class="card-status-badge">@card.CardStatus</div>
+                    <div class="card-logo">
+                        @if (card.CardType == "Debit")
+                        {
+                            <span>💳</span>
+                        }
+                        else
+                        {
+                            <span>💎</span>
+                        }
+                    </div>
+                    
+                    <div class="card-chip"></div>
+                    
+                    <div class="card-number">
+                        **** **** **** @card.CardNumber.Substring(card.CardNumber.Length - 4)
+                    </div>
+                    
+                    <div class="card-details">
+                        <div>
+                            <div class="card-holder">Card Holder</div>
+                            <div class="card-holder-name">@Context.Session.GetString("UserName")</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="card-expiry">Valid Thru</div>
+                            <div class="card-expiry-date">@card.ExpiryDate?.ToString("MM/yy")</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-actions">
+                    @if (card.CardStatus == "Active")
+                    {
+                        <form method="post" asp-action="DeactivateCard" style="flex: 1;">
+                            <input type="hidden" name="cardId" value="@card.CardId" />
+                            <button type="submit" class="btn btn-outline" style="width: 100%; background: white; color: #ef4444; border-color: #ef4444;">
+                                🔒 Deactivate
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form method="post" asp-action="ActivateCard" style="flex: 1;">
+                            <input type="hidden" name="cardId" value="@card.CardId" />
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                ✅ Activate
+                            </button>
+                        </form>
+                    }
+                    <button class="btn btn-outline" style="flex: 1;">
+                        📊 View Details
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="no-cards">
+        <div class="no-cards-icon">💳</div>
+        <h3>No Cards Yet</h3>
+        <p style="color: #64748b; margin: 16px 0;">You don't have any cards. Request your first card now!</p>
+        <a href="@Url.Action("RequestCard")" class="btn btn-primary">➕ Request New Card</a>
+    </div>
+}

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - BFAS Admin</title>
+    <link rel="stylesheet" href="~/css/modern-theme.css">
+    <link rel="stylesheet" href="~/css/responsive.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Windsurf-Inspired Color Palette - ADMIN THEME */
+        :root {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --primary-light: #a78bfa;
+            --secondary: #6366f1;
+            --secondary-dark: #4f46e5;
+            --accent: #ec4899;
+            --accent-dark: #db2777;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #64748b;
+            --border: #e2e8f0;
+        }
+
+        /* Admin Sidebar - Purple Gradient */
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+            box-shadow: 4px 0 24px rgba(139, 92, 246, 0.15) !important;
+        }
+
+        .logo {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .logo-icon {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .nav-item {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.15) !important;
+            color: white !important;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.25) !important;
+            color: white !important;
+            border-left: 4px solid white !important;
+        }
+
+        .nav-section-title {
+            color: rgba(255, 255, 255, 0.6) !important;
+        }
+
+        .nav-dropdown {
+            background: rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Main content gradient */
+        .main-content {
+            background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%) !important;
+        }
+
+        /* Header with accent */
+        .header {
+            background: white !important;
+            border-bottom: 3px solid transparent !important;
+            border-image: linear-gradient(to right, var(--primary), var(--accent)) !important;
+            border-image-slice: 1 !important;
+        }
+
+        /* Cards */
+        .card {
+            border-left: 4px solid var(--primary) !important;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark)) !important;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4) !important;
+        }
+
+        /* Stats cards */
+        .stat-card {
+            border-top: 4px solid var(--primary) !important;
+        }
+
+        /* Active highlights */
+        .badge-primary {
+            background: var(--primary) !important;
+        }
+
+        /* User avatar in header */
+        .user-avatar {
+            background: linear-gradient(135deg, var(--primary), var(--accent)) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">🏦</div>
+            <h2>BFAS</h2>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Overview</div>
+            <a class="nav-item" href="@Url.Action("Dashboard", "Admin")">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">User Management</div>
+            <div class="nav-parent" onclick="toggleDropdown('userMgmt')">
+                <div class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span>User Management</span>
+                    <span class="nav-arrow">▶</span>
+                </div>
+            </div>
+            <div class="nav-dropdown" id="userMgmt">
+                <a class="nav-item nav-sub-item" href="@Url.Action("Users", "Admin")">Customers</a>
+                <a class="nav-item nav-sub-item" href="@Url.Action("Employees", "Admin")">Employees</a>
+                <a class="nav-item nav-sub-item" href="@Url.Action("CustomerProfiles", "Admin")">Customer Profiles</a>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Banking</div>
+            <div class="nav-parent" onclick="toggleDropdown('banking')">
+                <div class="nav-item">
+                    <span class="nav-icon">🏦</span>
+                    <span>Banking</span>
+                    <span class="nav-arrow">▶</span>
+                </div>
+            </div>
+            <div class="nav-dropdown" id="banking">
+                <a class="nav-item nav-sub-item" href="@Url.Action("BankAccounts", "Admin")">Bank Accounts</a>
+                <a class="nav-item nav-sub-item" href="@Url.Action("Transactions", "Admin")">Transactions</a>
+                <a class="nav-item nav-sub-item" href="@Url.Action("Transfers", "Admin")">Transfers</a>
+                <a class="nav-item nav-sub-item" href="@Url.Action("Payments", "Admin")">Bill Payments</a>
+                <a class="nav-item nav-sub-item" href="@Url.Action("Billers", "Admin")">Billers</a>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Finance</div>
+            <div class="nav-parent" onclick="toggleDropdown('finance')">
+                <div class="nav-item">
+                    <span class="nav-icon">💰</span>
+                    <span>Finance</span>
+                    <span class="nav-arrow">▶</span>
+                </div>
+            </div>
+            <div class="nav-dropdown" id="finance">
+                <a class="nav-item nav-sub-item" href="@Url.Action("AccountsPayable", "Admin")">Accounts Payable</a>
+                <a class="nav-item nav-sub-item" href="@Url.Action("AccountsReceivable", "Admin")">Accounts Receivable</a>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Accounting</div>
+            <div class="nav-parent" onclick="toggleDropdown('accounting')">
+                <div class="nav-item">
+                    <span class="nav-icon">📝</span>
+                    <span>Accounting</span>
+                    <span class="nav-arrow">▶</span>
+                </div>
+            </div>
+            <div class="nav-dropdown" id="accounting">
+                <a class="nav-item nav-sub-item" href="@Url.Action("JournalEntries", "Admin")">Journal Entries</a>
+                <a class="nav-item nav-sub-item" href="@Url.Action("LedgerAccounts", "Admin")">Ledger Accounts</a>
+                <a class="nav-item nav-sub-item" href="@Url.Action("TrialBalance", "Admin")">Trial Balance</a>
+                <a class="nav-item nav-sub-item" href="@Url.Action("FinancialStatements", "Admin")">Financial Statements</a>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Administration</div>
+            <div class="nav-parent" onclick="toggleDropdown('admin')">
+                <div class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Administration</span>
+                    <span class="nav-arrow">▶</span>
+                </div>
+            </div>
+            <div class="nav-dropdown" id="admin">
+                <a class="nav-item nav-sub-item" href="@Url.Action("AuditLogs", "Admin")">Audit Logs</a>
+                <a class="nav-item nav-sub-item" href="@Url.Action("Branches", "Admin")">Branches</a>
+                <a class="nav-item nav-sub-item" href="@Url.Action("Settings", "Admin")">Settings</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="page-title-section">
+                <h1>@ViewBag.PageTitle</h1>
+                <div class="breadcrumb">@ViewBag.Breadcrumb</div>
+            </div>
+            <div class="user-menu">
+                <button class="notification-btn" onclick="alert('No new notifications')" title="Notifications">
+                    🔔
+                    <span class="notification-badge">3</span>
+                </button>
+                <div class="user-profile">
+                    <div class="user-avatar">@(Context.Session.GetString("UserName")?.Substring(0, 2).ToUpper() ?? "AD")</div>
+                    <div class="user-info">
+                        <div class="user-name">@Context.Session.GetString("UserName")</div>
+                        <div class="user-role">@Context.Session.GetString("UserRole")</div>
+                    </div>
+                </div>
+                <a href="@Url.Action("Logout", "Auth")" class="btn btn-outline" style="padding: 10px 16px;">Logout</a>
+            </div>
+        </div>
+
+        @RenderBody()
+    </div>
+
+    <script>
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id);
+            const parent = dropdown.previousElementSibling;
+            dropdown.classList.toggle('active');
+            parent.classList.toggle('open');
+        }
+
+        // Highlight active menu item
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(item => {
+                if (item.getAttribute('href') === currentPath) {
+                    item.classList.add('active');
+                    
+                    // If inside a dropdown, open it
+                    const dropdown = item.closest('.nav-dropdown');
+                    if (dropdown) {
+                        dropdown.classList.add('active');
+                        dropdown.previousElementSibling.classList.add('open');
+                    }
+                }
+            });
+        });
+
+        // Mobile menu toggle
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        }
+    </script>
+</body>
+</html>

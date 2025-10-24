@@ -1,0 +1,45 @@
+@model IEnumerable<BankAndFinance.Models.AccountsReceivable>
+
+@{
+    ViewBag.Title = "Accounts Receivable";
+    ViewBag.PageTitle = "Accounts Receivable Management";
+    ViewBag.Breadcrumb = "Home / Finance / Accounts Receivable";
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Accounts Receivable</div>
+        <a href="@Url.Action("CreateAccountReceivable", "Employee")" class="view-all-btn">Create New</a>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>AR ID</th>
+                    <th>Payer Name</th>
+                    <th>Amount</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Created By</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ar in Model)
+                {
+                    var daysUntilDue = (ar.DueDate - DateTime.Now).Days;
+                    var statusClass = ar.Status == "Paid" ? "completed" : (daysUntilDue < 0 ? "overdue" : "pending");
+                    
+                    <tr>
+                        <td>#AR@ar.ArId</td>
+                        <td>@ar.PayerName</td>
+                        <td><strong>$@ar.Amount.ToString("N2")</strong></td>
+                        <td>@ar.DueDate.ToString("yyyy-MM-dd")</td>
+                        <td><span class="status-badge status-@statusClass">@ar.Status</span></td>
+                        <td>@ar.Creator?.FullName</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
