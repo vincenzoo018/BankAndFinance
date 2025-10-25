@@ -28,15 +28,15 @@ namespace BankAndFinance.Models
 
         [Column("status")]
         [StringLength(20)]
-        public string Status { get; set; } = "Pending";
+        public string? Status { get; set; } = "Pending";
 
         [Column("reference_number")]
         [StringLength(50)]
-        public string ReferenceNumber { get; set; } = string.Empty;
+        public string? ReferenceNumber { get; set; }
 
         [Column("payment_mode")]
         [StringLength(50)]
-        public string PaymentMode { get; set; } = "Cash";
+        public string? PaymentMode { get; set; } = "Cash";
 
         [Column("qr_code")]
         [StringLength(255)]

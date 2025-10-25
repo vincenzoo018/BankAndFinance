@@ -19,6 +19,12 @@ namespace BankAndFinance.Controllers
         // GET: Rewards/Index
         public async Task<IActionResult> Index()
         {
+            return await MyRewards();
+        }
+
+        // GET: Rewards/MyRewards
+        public async Task<IActionResult> MyRewards()
+        {
             var userId = HttpContext.Session.GetInt32("UserId");
             
             // Get or create reward record
@@ -56,7 +62,7 @@ namespace BankAndFinance.Controllers
 
             ViewBag.Balance = account?.Balance;
             
-            return View(reward);
+            return View("Index", reward);
         }
 
         // POST: Rewards/RedeemPoints

@@ -1,0 +1,114 @@
+@{
+    ViewBag.Title = "Transfer Between Cards";
+    ViewBag.PageTitle = "Transfer Between Cards";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<div class="card" style="max-width: 700px; margin: 0 auto;">
+    <div class="card-header">
+        <div class="card-title">🔄 Transfer Between Cards</div>
+    </div>
+    
+    <div style="padding: 30px;">
+        <form method="post" asp-action="Transfer" id="transferForm">
+            <div class="form-group">
+                <label for="fromCardId">From Card</label>
+                <select class="form-select" id="fromCardId" name="fromCardId" required onchange="updateBalance()">
+                    <option value="">-- Select Source Card --</option>
+                    @if (ViewBag.Cards != null)
+                    {
+                        foreach (var card in (List<BankAndFinance.Models.Card>)ViewBag.Cards)
+                        {
+                            var cardType = card.CardType == "Debit" ? "💳" : "💎";
+                            var lastFour = card.CardNumber.Substring(card.CardNumber.Length - 4);
+                            <option value="@card.CardId" data-balance="@card.Balance">
+                                @cardType @card.CardType - **** @lastFour (Balance: $@card.Balance.ToString("N2"))
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="toCardId">To Card</label>
+                <select class="form-select" id="toCardId" name="toCardId" required>
+                    <option value="">-- Select Destination Card --</option>
+                    @if (ViewBag.Cards != null)
+                    {
+                        foreach (var card in (List<BankAndFinance.Models.Card>)ViewBag.Cards)
+                        {
+                            var cardType = card.CardType == "Debit" ? "💳" : "💎";
+                            var lastFour = card.CardNumber.Substring(card.CardNumber.Length - 4);
+                            <option value="@card.CardId">
+                                @cardType @card.CardType - **** @lastFour (Balance: $@card.Balance.ToString("N2"))
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div id="availableBalance" style="background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 20px; display: none;">
+                <div style="font-size: 14px; color: #64748b;">Available Balance</div>
+                <div style="font-size: 24px; font-weight: 700; color: #10b981; margin-top: 4px;" id="balanceAmount">$0.00</div>
+            </div>
+
+            <div class="form-group">
+                <label for="amount">Transfer Amount</label>
+                <input type="number" class="form-input" id="amount" name="amount" step="0.01" min="0.01" required placeholder="Enter amount to transfer">
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description (Optional)</label>
+                <textarea class="form-input" id="description" name="description" rows="3" placeholder="e.g., Savings transfer, Emergency fund"></textarea>
+            </div>
+
+            <div style="margin-top: 30px; display: flex; gap: 12px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">🔄 Transfer Now</button>
+                <a href="@Url.Action("MyCards")" class="btn btn-outline" style="flex: 1;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function updateBalance() {
+    const fromCard = document.getElementById('fromCardId');
+    const balanceDiv = document.getElementById('availableBalance');
+    const balanceAmount = document.getElementById('balanceAmount');
+    
+    if (fromCard.value) {
+        const selectedOption = fromCard.options[fromCard.selectedIndex];
+        const balance = selectedOption.getAttribute('data-balance');
+        balanceAmount.textContent = '$' + parseFloat(balance).toFixed(2);
+        balanceDiv.style.display = 'block';
+    } else {
+        balanceDiv.style.display = 'none';
+    }
+}
+
+document.getElementById('transferForm').addEventListener('submit', function(e) {
+    const fromCard = document.getElementById('fromCardId').value;
+    const toCard = document.getElementById('toCardId').value;
+    const amount = parseFloat(document.getElementById('amount').value);
+    
+    if (fromCard === toCard) {
+        e.preventDefault();
+        alert('Cannot transfer to the same card');
+        return false;
+    }
+    
+    const selectedOption = document.getElementById('fromCardId').options[document.getElementById('fromCardId').selectedIndex];
+    const balance = parseFloat(selectedOption.getAttribute('data-balance'));
+    
+    if (amount > balance) {
+        e.preventDefault();
+        alert('Insufficient balance on source card');
+        return false;
+    }
+    
+    if (!confirm(`Transfer $${amount.toFixed(2)} to the selected card?`)) {
+        e.preventDefault();
+        return false;
+    }
+});
+</script>

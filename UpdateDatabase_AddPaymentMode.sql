@@ -45,7 +45,7 @@ PRINT '📝 Changes Made:';
 PRINT '   - Added payment_mode column (Cash, Card, QR Code)';
 PRINT '   - Added qr_code column for QR payment tracking';
 PRINT '';
-PRINT '🚀 Next Steps:';
+PRINT '🚀 Next Steps:';     
 PRINT '   1. Restart your application';
 PRINT '   2. Test transactions with payment modes';
 PRINT '========================================';

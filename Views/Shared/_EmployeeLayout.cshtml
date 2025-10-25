@@ -160,6 +160,23 @@
                 <a class="nav-item nav-sub-item" href="@Url.Action("FinancialStatements", "Employee")">Financial Statements</a>
             </div>
         </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">ERP Modules</div>
+            <div class="nav-parent" onclick="toggleDropdown('erp')">
+                <div class="nav-item">
+                    <span class="nav-icon">🏢</span>
+                    <span>ERP System</span>
+                    <span class="nav-arrow">▶</span>
+                </div>
+            </div>
+            <div class="nav-dropdown" id="erp">
+                <a class="nav-item nav-sub-item" href="@Url.Action("Index", "HR")">👥 Human Resources</a>
+                <a class="nav-item nav-sub-item" href="@Url.Action("Index", "Inventory")">📦 Inventory</a>
+                <a class="nav-item nav-sub-item" href="@Url.Action("Index", "CRM")">🤝 CRM</a>
+                <a class="nav-item nav-sub-item" href="@Url.Action("Index", "Project")">📊 Projects</a>
+            </div>
+        </div>
     </div>
 
     <div class="main-content">

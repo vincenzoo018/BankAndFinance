@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using BankAndFinance.Data;
 using BankAndFinance.Helpers;
 using BankAndFinance.Models;
+using BankAndFinance.Services;
 
 namespace BankAndFinance.Controllers
 {
@@ -123,6 +124,90 @@ namespace BankAndFinance.Controllers
         {
             var billers = await _context.Billers.ToListAsync();
             return View(billers);
+        }
+
+        public async Task<IActionResult> Cards()
+        {
+            var cards = await _context.Cards
+                .Include(c => c.Account)
+                    .ThenInclude(a => a!.User)
+                .OrderByDescending(c => c.CreatedAt)
+                .ToListAsync();
+            return View(cards);
+        }
+
+        public async Task<IActionResult> CardDetails(int id)
+        {
+            var card = await _context.Cards
+                .Include(c => c.Account)
+                    .ThenInclude(a => a!.User)
+                .FirstOrDefaultAsync(c => c.CardId == id);
+
+            if (card == null)
+            {
+                TempData["Error"] = "Card not found";
+                return RedirectToAction("Cards");
+            }
+
+            // Get transactions for this card
+            var transactions = await _context.Transactions
+                .Where(t => t.AccountId == card.AccountId && 
+                           (t.PaymentMode != null && t.PaymentMode.Contains(card.CardNumber.Substring(card.CardNumber.Length - 4))))
+                .OrderByDescending(t => t.TransactionDate)
+                .Take(50)
+                .ToListAsync();
+
+            ViewBag.Transactions = transactions;
+            return View(card);
+        }
+
+        public async Task<IActionResult> CardRequests()
+        {
+            var requests = await _context.CardRequests
+                .Include(cr => cr.User)
+                .Include(cr => cr.Account)
+                .Include(cr => cr.Approver)
+                .OrderByDescending(cr => cr.CreatedAt)
+                .ToListAsync();
+            return View(requests);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ApproveCardRequest(int requestId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var cardService = HttpContext.RequestServices.GetRequiredService<ICardService>();
+            var result = await cardService.ApproveCardRequestAsync(requestId, userId.Value);
+
+            if (result.Success)
+            {
+                TempData["Success"] = result.Message;
+            }
+            else
+            {
+                TempData["Error"] = result.Message;
+            }
+
+            return RedirectToAction("CardRequests");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectCardRequest(int requestId, string rejectionReason)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var cardService = HttpContext.RequestServices.GetRequiredService<ICardService>();
+            var result = await cardService.RejectCardRequestAsync(requestId, userId.Value, rejectionReason);
+
+            if (result.Success)
+            {
+                TempData["Success"] = result.Message;
+            }
+            else
+            {
+                TempData["Error"] = result.Message;
+            }
+
+            return RedirectToAction("CardRequests");
         }
 
         // Finance Management
@@ -289,6 +374,216 @@ namespace BankAndFinance.Controllers
 
             TempData["Success"] = "Customer profile updated successfully";
             return RedirectToAction("CustomerProfiles");
+        }
+
+        // Employee Management Methods
+        [HttpGet]
+        public IActionResult CreateEmployee()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateEmployee(string fullName, string email, string password, string confirmPassword)
+        {
+            if (password != confirmPassword)
+            {
+                TempData["Error"] = "Passwords do not match";
+                return View();
+            }
+
+            // Check if email already exists
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (existingUser != null)
+            {
+                TempData["Error"] = "Email address is already registered";
+                return View();
+            }
+
+            // Hash password
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                var hashedBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                password = Convert.ToBase64String(hashedBytes);
+            }
+
+            // Create new employee
+            var employee = new User
+            {
+                RoleId = 2, // Employee role
+                FullName = fullName,
+                Email = email,
+                Password = password,
+                Status = "Active",
+                CreatedAt = DateTime.Now
+            };
+
+            _context.Users.Add(employee);
+            await _context.SaveChangesAsync();
+
+            // Log the action
+            var auditLog = new AuditLog
+            {
+                UserId = HttpContext.Session.GetInt32("UserId")!.Value,
+                Action = $"Created new employee: {fullName}",
+                Module = "Employee Management",
+                Timestamp = DateTime.Now
+            };
+            _context.AuditLogs.Add(auditLog);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Employee created successfully";
+            return RedirectToAction("Employees");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditEmployee(int id)
+        {
+            var employee = await _context.Users.FindAsync(id);
+            if (employee == null || employee.RoleId != 2)
+            {
+                TempData["Error"] = "Employee not found";
+                return RedirectToAction("Employees");
+            }
+            return View(employee);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditEmployee(int userId, string fullName, string email)
+        {
+            var employee = await _context.Users.FindAsync(userId);
+            if (employee == null || employee.RoleId != 2)
+            {
+                TempData["Error"] = "Employee not found";
+                return RedirectToAction("Employees");
+            }
+
+            // Check if email is being changed and if it's already taken by another user
+            if (employee.Email != email)
+            {
+                var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.UserId != userId);
+                if (existingUser != null)
+                {
+                    TempData["Error"] = "Email address is already taken by another user";
+                    return View(employee);
+                }
+            }
+
+            employee.FullName = fullName;
+            employee.Email = email;
+
+            await _context.SaveChangesAsync();
+
+            // Log the action
+            var auditLog = new AuditLog
+            {
+                UserId = HttpContext.Session.GetInt32("UserId")!.Value,
+                Action = $"Updated employee: {fullName}",
+                Module = "Employee Management",
+                Timestamp = DateTime.Now
+            };
+            _context.AuditLogs.Add(auditLog);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Employee updated successfully";
+            return RedirectToAction("Employees");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ToggleEmployeeStatus(int userId, string status)
+        {
+            var employee = await _context.Users.FindAsync(userId);
+            if (employee == null || employee.RoleId != 2)
+            {
+                TempData["Error"] = "Employee not found";
+                return RedirectToAction("Employees");
+            }
+
+            employee.Status = status;
+            await _context.SaveChangesAsync();
+
+            // Log the action
+            var auditLog = new AuditLog
+            {
+                UserId = HttpContext.Session.GetInt32("UserId")!.Value,
+                Action = $"Changed employee status to {status}: {employee.FullName}",
+                Module = "Employee Management",
+                Timestamp = DateTime.Now
+            };
+            _context.AuditLogs.Add(auditLog);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Employee {status.ToLower()} successfully";
+            return RedirectToAction("Employees");
+        }
+
+        // API endpoint for transaction chart data
+        [HttpGet]
+        public async Task<IActionResult> GetTransactionData(string filterType, DateTime? startDate = null, DateTime? endDate = null)
+        {
+            DateTime start, end;
+            
+            // Determine date range based on filter type
+            switch (filterType)
+            {
+                case "week":
+                    end = DateTime.Now;
+                    start = end.AddDays(-7);
+                    break;
+                case "year":
+                    end = DateTime.Now;
+                    start = new DateTime(end.Year, 1, 1);
+                    break;
+                case "custom":
+                    if (startDate.HasValue && endDate.HasValue)
+                    {
+                        start = startDate.Value;
+                        end = endDate.Value.AddDays(1).AddSeconds(-1);
+                    }
+                    else
+                    {
+                        end = DateTime.Now;
+                        start = new DateTime(end.Year, end.Month, 1);
+                    }
+                    break;
+                default: // month
+                    end = DateTime.Now;
+                    start = new DateTime(end.Year, end.Month, 1);
+                    break;
+            }
+
+            // Get transactions in date range
+            var transactions = await _context.Transactions
+                .Where(t => t.TransactionDate >= start && t.TransactionDate <= end)
+                .OrderBy(t => t.TransactionDate)
+                .ToListAsync();
+
+            // Group by date
+            var groupedData = transactions
+                .GroupBy(t => t.TransactionDate.Date)
+                .Select(g => new
+                {
+                    Date = g.Key,
+                    Deposits = g.Where(t => t.TransactionType.Contains("Deposit", StringComparison.OrdinalIgnoreCase)).Sum(t => t.Amount),
+                    Withdrawals = g.Where(t => t.TransactionType.Contains("Withdraw", StringComparison.OrdinalIgnoreCase)).Sum(t => t.Amount),
+                    Transfers = g.Where(t => t.TransactionType.Contains("Transfer", StringComparison.OrdinalIgnoreCase)).Sum(t => t.Amount)
+                })
+                .OrderBy(g => g.Date)
+                .ToList();
+
+            // Format data for chart
+            var labels = groupedData.Select(d => d.Date.ToString("MMM dd")).ToList();
+            var deposits = groupedData.Select(d => d.Deposits).ToList();
+            var withdrawals = groupedData.Select(d => d.Withdrawals).ToList();
+            var transfers = groupedData.Select(d => d.Transfers).ToList();
+
+            return Json(new
+            {
+                labels,
+                deposits,
+                withdrawals,
+                transfers
+            });
         }
     }
 }

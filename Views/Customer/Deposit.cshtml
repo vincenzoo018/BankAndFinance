@@ -36,21 +36,45 @@
             
             <div class="form-group">
                 <label for="paymentMode">Payment Mode</label>
-                <select class="form-select" id="paymentMode" name="paymentMode" required style="padding: 12px;">
-                    <option value="Cash">💵 Cash</option>
-                    <option value="Card">💳 Card</option>
-                    <option value="QR Code">📱 QR Code</option>
-                    <option value="Bank Transfer">🏦 Bank Transfer</option>
-                </select>
-            </div>
-            
-            <div class="form-group" id="qrSection" style="display: none;">
-                <label>Scan QR Code to Pay</label>
-                <div style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 12px;">
-                    <div id="qrCodeDisplay" style="font-size: 120px;">📱</div>
-                    <p style="color: #64748b; margin-top: 12px;">QR Code: <span id="qrCodeText">DEPOSIT-@DateTime.Now.Ticks</span></p>
-                    <input type="hidden" id="qrCode" name="qrCode" value="">
+                <div style="background: #f0fdf4; border: 2px solid #10b981; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="font-size: 32px;">💵</div>
+                        <div>
+                            <p style="margin: 0; font-weight: 600; color: #065f46;">Cash Deposit Only</p>
+                            <p style="margin: 4px 0 0 0; font-size: 13px; color: #047857;">
+                                All deposits must be made in cash at any of our branches
+                            </p>
+                        </div>
+                    </div>
                 </div>
+                <input type="hidden" name="paymentMode" value="Cash">
+            </div>
+
+            <div class="form-group">
+                <label for="cardId">Deposit to Card (Optional)</label>
+                @if (ViewBag.Cards != null && ((List<BankAndFinance.Models.Card>)ViewBag.Cards).Any())
+                {
+                    <select class="form-select" id="cardId" name="cardId" style="padding: 12px;">
+                        <option value="">-- Select Card (or skip for general deposit) --</option>
+                        @foreach (var card in (List<BankAndFinance.Models.Card>)ViewBag.Cards)
+                        {
+                            var cardType = card.CardType == "Debit" ? "💳" : "💎";
+                            var lastFour = card.CardNumber.Substring(card.CardNumber.Length - 4);
+                            <option value="@card.CardId">@cardType @card.CardType - **** @lastFour</option>
+                        }
+                    </select>
+                    <p style="color: #64748b; font-size: 13px; margin-top: 8px;">
+                        ℹ️ Select which card this deposit is for (helps track your money)
+                    </p>
+                }
+                else
+                {
+                    <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+                        <p style="color: #64748b; margin: 0; font-size: 14px;">
+                            No cards available. Deposit will go to your main account.
+                        </p>
+                    </div>
+                }
             </div>
             
             <div style="margin-top: 30px;">
@@ -124,22 +148,9 @@ function showDepositConfirmation() {
     const amount = parseFloat(document.getElementById('amount').value);
     const currentBalance = parseFloat('@ViewBag.CurrentBalance');
     const newBalance = currentBalance + amount;
-    const paymentMode = document.getElementById('paymentMode').value;
     
     document.getElementById('confirmAmount').textContent = '$' + amount.toFixed(2);
     document.getElementById('confirmNewBalance').textContent = '$' + newBalance.toFixed(2);
-    
-    // Add payment mode to confirmation
-    const confirmDetails = document.querySelector('.confirm-details');
-    let paymentModeRow = document.getElementById('paymentModeRow');
-    if (!paymentModeRow) {
-        paymentModeRow = document.createElement('div');
-        paymentModeRow.id = 'paymentModeRow';
-        paymentModeRow.className = 'confirm-detail-row';
-        paymentModeRow.innerHTML = '<span class="confirm-detail-label">Payment Mode:</span><span class="confirm-detail-value" id="confirmPaymentMode"></span>';
-        confirmDetails.insertBefore(paymentModeRow, confirmDetails.lastElementChild);
-    }
-    document.getElementById('confirmPaymentMode').textContent = paymentMode;
     
     document.getElementById('confirmOverlay').classList.add('active');
 }

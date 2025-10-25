@@ -38,8 +38,17 @@ namespace BankAndFinance.Models
         [Column("card_limit", TypeName = "decimal(18,2)")]
         public decimal? CardLimit { get; set; }
 
+        [Column("balance", TypeName = "decimal(18,2)")]
+        public decimal Balance { get; set; } = 0;
+
+        [Column("is_primary")]
+        public bool IsPrimary { get; set; } = false;
+
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        [Column("updated_at")]
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
         // Navigation property
         [ForeignKey("AccountId")]

@@ -1,0 +1,163 @@
+@model IEnumerable<BankAndFinance.Models.InventoryItem>
+
+@{
+    ViewBag.Title = "Inventory Management";
+    ViewBag.PageTitle = "Inventory Management";
+    ViewBag.Breadcrumb = "Home / ERP / Inventory";
+}
+
+<div class="stats-grid" style="margin-bottom: 24px;">
+    <div class="stat-card" style="border-left: 4px solid #6366f1;">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white;">📦</div>
+        <div class="stat-label">Total Items</div>
+        <div class="stat-value" style="color: #6366f1;">@ViewBag.TotalItems</div>
+        <div class="stat-change">In Inventory</div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid #f59e0b;">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">⚠️</div>
+        <div class="stat-label">Low Stock Items</div>
+        <div class="stat-value" style="color: #f59e0b;">@ViewBag.LowStockItems</div>
+        <div class="stat-change">Need Reorder</div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid #10b981;">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">💰</div>
+        <div class="stat-label">Total Value</div>
+        <div class="stat-value" style="color: #10b981;">$@ViewBag.TotalValue?.ToString("N2")</div>
+        <div class="stat-change">Inventory Worth</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">📦 Inventory Items</div>
+        <a href="@Url.Action("Create", "Inventory")" class="btn btn-primary">➕ Add Item</a>
+    </div>
+    
+    <div class="filter-bar">
+        <input type="text" class="filter-input" id="searchItem" placeholder="Search by item code or name...">
+        <select class="filter-select" id="filterCategory">
+            <option value="">All Categories</option>
+            <option value="Office Supplies">Office Supplies</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Furniture">Furniture</option>
+            <option value="Software">Software</option>
+            <option value="Equipment">Equipment</option>
+        </select>
+        <select class="filter-select" id="filterStatus">
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Discontinued">Discontinued</option>
+            <option value="Out of Stock">Out of Stock</option>
+        </select>
+        <label style="display: flex; align-items: center; gap: 8px; color: #64748b; font-size: 14px;">
+            <input type="checkbox" id="filterLowStock" style="width: 18px; height: 18px;">
+            <span>Low Stock Only</span>
+        </label>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Item Code</th>
+                    <th>Item Name</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Reorder Level</th>
+                    <th>Status</th>
+                    <th style="text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    var isLowStock = item.Quantity <= item.ReorderLevel;
+                    <tr data-low-stock="@isLowStock.ToString().ToLower()">
+                        <td><strong>@item.ItemCode</strong></td>
+                        <td>@item.ItemName</td>
+                        <td>@item.Category</td>
+                        <td>
+                            <span style="color: @(isLowStock ? "#ef4444" : "#10b981"); font-weight: 600;">
+                                @item.Quantity
+                                @if (isLowStock) { <span style="font-size: 12px;">⚠️</span> }
+                            </span>
+                        </td>
+                        <td><strong>$@item.UnitPrice.ToString("N2")</strong></td>
+                        <td>@item.ReorderLevel</td>
+                        <td><span class="status-badge status-@item.Status.ToLower().Replace(" ", "-")">@item.Status</span></td>
+                        <td style="text-align: center;">
+                            <a href="@Url.Action("Edit", "Inventory", new { id = item.ItemId })" class="btn-edit">✏️ Edit</a>
+                            <form method="post" action="@Url.Action("Delete", "Inventory")" style="display: inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.ItemId" />
+                                <button type="submit" class="btn-delete" onclick="return confirm('Delete this item?')">🗑️ Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+// Real-time filtering for Inventory
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchItem');
+    const filterCategory = document.getElementById('filterCategory');
+    const filterStatus = document.getElementById('filterStatus');
+    const filterLowStock = document.getElementById('filterLowStock');
+    const tableRows = document.querySelectorAll('tbody tr');
+
+    function filterItems() {
+        const searchValue = searchInput.value.toLowerCase();
+        const categoryValue = filterCategory.value.toLowerCase();
+        const statusValue = filterStatus.value.toLowerCase();
+        const showLowStockOnly = filterLowStock.checked;
+
+        let visibleCount = 0;
+
+        tableRows.forEach(row => {
+            const itemCode = row.cells[0].textContent.toLowerCase();
+            const itemName = row.cells[1].textContent.toLowerCase();
+            const itemCategory = row.cells[2].textContent.toLowerCase();
+            const itemStatus = row.cells[6].textContent.trim().toLowerCase();
+            const isLowStock = row.getAttribute('data-low-stock') === 'true';
+
+            let showRow = true;
+
+            // Filter by search
+            if (searchValue && !itemCode.includes(searchValue) && !itemName.includes(searchValue)) {
+                showRow = false;
+            }
+
+            // Filter by category
+            if (categoryValue && itemCategory !== categoryValue) {
+                showRow = false;
+            }
+
+            // Filter by status
+            if (statusValue && !itemStatus.includes(statusValue)) {
+                showRow = false;
+            }
+
+            // Filter by low stock
+            if (showLowStockOnly && !isLowStock) {
+                showRow = false;
+            }
+
+            row.style.display = showRow ? '' : 'none';
+            if (showRow) visibleCount++;
+        });
+
+        console.log(`Showing ${visibleCount} of ${tableRows.length} items`);
+    }
+
+    // Add event listeners
+    searchInput.addEventListener('input', filterItems);
+    filterCategory.addEventListener('change', filterItems);
+    filterStatus.addEventListener('change', filterItems);
+    filterLowStock.addEventListener('change', filterItems);
+});
+</script>

@@ -120,9 +120,25 @@
 </style>
 
 <div class="card">
-    <div class="card-header">
-        <div class="card-title">💳 My Cards</div>
-        <a href="@Url.Action("RequestCard")" class="btn btn-primary">➕ Request New Card</a>
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <div class="card-title">💳 My Cards</div>
+            <div style="display: flex; gap: 24px; margin-top: 12px; font-size: 14px;">
+                <div>
+                    <span style="color: #64748b;">Total Cards Balance:</span>
+                    <strong style="color: #10b981; font-size: 18px; margin-left: 8px;">$@ViewBag.TotalCardBalance.ToString("N2")</strong>
+                </div>
+                <div>
+                    <span style="color: #64748b;">Account Balance:</span>
+                    <strong style="color: #3b82f6; font-size: 18px; margin-left: 8px;">$@ViewBag.Balance.ToString("N2")</strong>
+                </div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <a href="@Url.Action("Transfer")" class="btn btn-outline">🔄 Transfer Between Cards</a>
+            <a href="@Url.Action("MyRequests")" class="btn btn-outline">📋 My Requests</a>
+            <a href="@Url.Action("RequestCard")" class="btn btn-primary">➕ Request New Card</a>
+        </div>
     </div>
 </div>
 
@@ -151,6 +167,15 @@
                         **** **** **** @card.CardNumber.Substring(card.CardNumber.Length - 4)
                     </div>
                     
+                    <div style="margin: 15px 0; padding: 12px; background: rgba(255,255,255,0.2); border-radius: 8px;">
+                        <div style="font-size: 12px; opacity: 0.8;">Card Balance</div>
+                        <div style="font-size: 24px; font-weight: 700; margin-top: 4px;">$@card.Balance.ToString("N2")</div>
+                        @if (card.IsPrimary)
+                        {
+                            <div style="margin-top: 8px; font-size: 11px; background: rgba(255,255,255,0.3); display: inline-block; padding: 4px 8px; border-radius: 4px;">⭐ PRIMARY</div>
+                        }
+                    </div>
+                    
                     <div class="card-details">
                         <div>
                             <div class="card-holder">Card Holder</div>
@@ -164,27 +189,36 @@
                 </div>
                 
                 <div class="card-actions">
+                    <a href="@Url.Action("CardDetails", new { id = card.CardId })" class="btn btn-primary" style="flex: 1;">
+                        👁️ Details
+                    </a>
                     @if (card.CardStatus == "Active")
                     {
-                        <form method="post" asp-action="DeactivateCard" style="flex: 1;">
+                        @if (!card.IsPrimary)
+                        {
+                            <form method="post" asp-action="SetPrimary" style="flex: 1;">
+                                <input type="hidden" name="cardId" value="@card.CardId" />
+                                <button type="submit" class="btn btn-outline" style="width: 100%;">
+                                    ⭐ Set Primary
+                                </button>
+                            </form>
+                        }
+                        <form method="post" asp-action="BlockCard" style="flex: 1;">
                             <input type="hidden" name="cardId" value="@card.CardId" />
-                            <button type="submit" class="btn btn-outline" style="width: 100%; background: white; color: #ef4444; border-color: #ef4444;">
-                                🔒 Deactivate
+                            <button type="submit" class="btn btn-outline" style="width: 100%; color: #ef4444; border-color: #ef4444;" onclick="return confirm('Are you sure you want to block this card?')">
+                                🔒 Block
                             </button>
                         </form>
                     }
-                    else
+                    else if (card.CardStatus == "Blocked")
                     {
-                        <form method="post" asp-action="ActivateCard" style="flex: 1;">
+                        <form method="post" asp-action="UnblockCard" style="flex: 1;">
                             <input type="hidden" name="cardId" value="@card.CardId" />
                             <button type="submit" class="btn btn-primary" style="width: 100%;">
-                                ✅ Activate
+                                🔓 Unblock
                             </button>
                         </form>
                     }
-                    <button class="btn btn-outline" style="flex: 1;">
-                        📊 View Details
-                    </button>
                 </div>
             </div>
         }

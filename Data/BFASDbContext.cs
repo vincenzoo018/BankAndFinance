@@ -31,11 +31,34 @@ namespace BankAndFinance.Data
         
         // New Banking Features
         public DbSet<Card> Cards { get; set; }
+        public DbSet<CardRequest> CardRequests { get; set; }
+        public DbSet<CardTransfer> CardTransfers { get; set; }
         public DbSet<Beneficiary> Beneficiaries { get; set; }
         public DbSet<SavingsGoal> SavingsGoals { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<QRPayment> QRPayments { get; set; }
         public DbSet<Reward> Rewards { get; set; }
+        public DbSet<ScheduledPayment> ScheduledPayments { get; set; }
+        public DbSet<SystemSettings> SystemSettings { get; set; }
+        
+        // ERP Modules
+        public DbSet<Employee> Employees { get; set; }
+        public DbSet<InventoryItem> InventoryItems { get; set; }
+        public DbSet<CRMCustomer> CRMCustomers { get; set; }
+        public DbSet<Project> Projects { get; set; }
+        
+        // Advanced Banking & Finance Features
+        public DbSet<Loan> Loans { get; set; }
+        public DbSet<Budget> Budgets { get; set; }
+        public DbSet<FixedAsset> FixedAssets { get; set; }
+        public DbSet<Payroll> Payrolls { get; set; }
+        
+        // Customer ERP Features
+        public DbSet<LoanApplication> LoanApplications { get; set; }
+        public DbSet<Investment> Investments { get; set; }
+        public DbSet<Insurance> Insurances { get; set; }
+        public DbSet<Statement> Statements { get; set; }
+        public DbSet<CreditScore> CreditScores { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -50,11 +73,11 @@ namespace BankAndFinance.Data
                 .HasForeignKey(u => u.RoleId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // User - BankAccount (One-to-One)
+            // User - BankAccount (One-to-Many)
             modelBuilder.Entity<BankAccount>()
                 .HasOne(ba => ba.User)
-                .WithOne(u => u.BankAccount)
-                .HasForeignKey<BankAccount>(ba => ba.UserId)
+                .WithMany()
+                .HasForeignKey(ba => ba.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // User - CustomerProfile (One-to-One)

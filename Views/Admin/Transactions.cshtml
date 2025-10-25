@@ -11,21 +11,72 @@
         <div class="card-title">Transaction History</div>
     </div>
     
-    <div class="filter-bar">
-        <input type="date" class="filter-input" id="filterDate">
-        <select class="filter-select" id="filterType">
-            <option value="">All Types</option>
-            <option value="Deposit">Deposit</option>
-            <option value="Withdraw">Withdraw</option>
-            <option value="Transfer">Transfer</option>
-            <option value="Bill Payment">Bill Payment</option>
-        </select>
-        <select class="filter-select" id="filterStatus">
-            <option value="">All Status</option>
-            <option value="Completed">Completed</option>
-            <option value="Pending">Pending</option>
-            <option value="Failed">Failed</option>
-        </select>
+    <div class="filter-bar" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; padding: 20px; background: #f8fafc; border-radius: 8px; margin-bottom: 20px;">
+        <div>
+            <label style="display: block; font-size: 12px; color: #64748b; margin-bottom: 4px; font-weight: 600;">DATE RANGE</label>
+            <select class="filter-select" id="filterDateRange" onchange="applyFilters()" style="width: 100%;">
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="year">This Year</option>
+                <option value="custom">Custom Range</option>
+            </select>
+        </div>
+        <div id="customDateRange" style="display: none; grid-column: span 2;">
+            <label style="display: block; font-size: 12px; color: #64748b; margin-bottom: 4px; font-weight: 600;">CUSTOM DATE RANGE</label>
+            <div style="display: flex; gap: 8px;">
+                <input type="date" class="filter-input" id="filterDateFrom" onchange="applyFilters()" placeholder="From" style="flex: 1;">
+                <input type="date" class="filter-input" id="filterDateTo" onchange="applyFilters()" placeholder="To" style="flex: 1;">
+            </div>
+        </div>
+        <div>
+            <label style="display: block; font-size: 12px; color: #64748b; margin-bottom: 4px; font-weight: 600;">TRANSACTION TYPE</label>
+            <select class="filter-select" id="filterType" onchange="applyFilters()" style="width: 100%;">
+                <option value="">All Types</option>
+                <option value="Deposit">Deposit</option>
+                <option value="Withdrawal">Withdrawal</option>
+                <option value="Transfer">Transfer</option>
+                <option value="Bill Payment">Bill Payment</option>
+            </select>
+        </div>
+        <div>
+            <label style="display: block; font-size: 12px; color: #64748b; margin-bottom: 4px; font-weight: 600;">CARD TYPE</label>
+            <select class="filter-select" id="filterCardType" onchange="applyFilters()" style="width: 100%;">
+                <option value="">All Cards</option>
+                <option value="Debit">Debit Card</option>
+                <option value="Credit">Credit Card</option>
+                <option value="Cash">Cash</option>
+            </select>
+        </div>
+        <div>
+            <label style="display: block; font-size: 12px; color: #64748b; margin-bottom: 4px; font-weight: 600;">STATUS</label>
+            <select class="filter-select" id="filterStatus" onchange="applyFilters()" style="width: 100%;">
+                <option value="">All Status</option>
+                <option value="Completed">Completed</option>
+                <option value="Pending">Pending</option>
+                <option value="Failed">Failed</option>
+            </select>
+        </div>
+        <div>
+            <label style="display: block; font-size: 12px; color: #64748b; margin-bottom: 4px; font-weight: 600;">AMOUNT RANGE</label>
+            <select class="filter-select" id="filterAmount" onchange="applyFilters()" style="width: 100%;">
+                <option value="all">All Amounts</option>
+                <option value="0-100">$0 - $100</option>
+                <option value="100-500">$100 - $500</option>
+                <option value="500-1000">$500 - $1,000</option>
+                <option value="1000-5000">$1,000 - $5,000</option>
+                <option value="5000+">$5,000+</option>
+            </select>
+        </div>
+        <div style="display: flex; align-items: flex-end; gap: 8px;">
+            <button onclick="applyFilters()" class="btn btn-primary" style="flex: 1; padding: 10px;">🔍 Filter</button>
+            <button onclick="clearFilters()" class="btn btn-outline" style="flex: 1; padding: 10px;">🔄 Clear</button>
+        </div>
+    </div>
+    
+    <div id="filterResults" style="padding: 12px 20px; background: #e0f2fe; border-radius: 8px; margin-bottom: 16px; display: none;">
+        <strong style="color: #0369a1;">Showing <span id="resultCount">0</span> transactions</strong>
     </div>
     
     <div class="table-container">
@@ -60,3 +111,75 @@
         </table>
     </div>
 </div>
+
+<script>
+// Real-time comprehensive filtering
+const tableRows = document.querySelectorAll('tbody tr');
+
+// Show/hide custom date range
+document.getElementById('filterDateRange').addEventListener('change', function() {
+    const customRange = document.getElementById('customDateRange');
+    customRange.style.display = this.value === 'custom' ? 'block' : 'none';
+});
+
+function applyFilters() {
+    const dateRange = document.getElementById('filterDateRange').value;
+    const dateFrom = document.getElementById('filterDateFrom').value;
+    const dateTo = document.getElementById('filterDateTo').value;
+    const type = document.getElementById('filterType').value.toLowerCase();
+    const cardType = document.getElementById('filterCardType').value.toLowerCase();
+    const status = document.getElementById('filterStatus').value.toLowerCase();
+    const amountRange = document.getElementById('filterAmount').value;
+    
+    let visibleCount = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    tableRows.forEach(row => {
+        let showRow = true;
+        
+        const rowDateText = row.cells[5].textContent.split(' ')[0];
+        const rowDate = new Date(rowDateText);
+        const rowType = row.cells[3].textContent.trim().toLowerCase();
+        const rowAmount = parseFloat(row.cells[4].textContent.replace('$', '').replace(',', ''));
+        const rowStatus = row.cells[6].textContent.trim().toLowerCase();
+        
+        // Date filter
+        if (dateRange !== 'all') {
+            const daysDiff = Math.floor((today - rowDate) / (1000 * 60 * 60 * 24));
+            if (dateRange === 'today' && daysDiff !== 0) showRow = false;
+            if (dateRange === 'week' && daysDiff > 7) showRow = false;
+            if (dateRange === 'month' && daysDiff > 30) showRow = false;
+            if (dateRange === 'year' && daysDiff > 365) showRow = false;
+            if (dateRange === 'custom') {
+                if (dateFrom && rowDate < new Date(dateFrom)) showRow = false;
+                if (dateTo && rowDate > new Date(dateTo)) showRow = false;
+            }
+        }
+        
+        if (type && !rowType.includes(type)) showRow = false;
+        if (status && !rowStatus.includes(status)) showRow = false;
+        
+        if (amountRange !== 'all') {
+            const ranges = { '0-100': [0,100], '100-500': [100,500], '500-1000': [500,1000], '1000-5000': [1000,5000], '5000+': [5000,Infinity] };
+            const [min, max] = ranges[amountRange] || [0, Infinity];
+            if (rowAmount < min || rowAmount > max) showRow = false;
+        }
+        
+        row.style.display = showRow ? '' : 'none';
+        if (showRow) visibleCount++;
+    });
+    
+    document.getElementById('filterResults').style.display = 'block';
+    document.getElementById('resultCount').textContent = visibleCount;
+}
+
+function clearFilters() {
+    document.getElementById('filterDateRange').value = 'all';
+    document.getElementById('filterType').value = '';
+    document.getElementById('filterStatus').value = '';
+    document.getElementById('filterAmount').value = 'all';
+    tableRows.forEach(row => row.style.display = '');
+    document.getElementById('filterResults').style.display = 'none';
+}
+</script>

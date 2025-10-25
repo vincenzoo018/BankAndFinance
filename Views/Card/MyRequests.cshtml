@@ -1,0 +1,126 @@
+@model List<BankAndFinance.Models.CardRequest>
+@{
+    ViewBag.Title = "My Card Requests";
+    ViewBag.PageTitle = "My Card Requests";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<div class="card">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="card-title">📋 My Card Requests</div>
+        <div style="display: flex; gap: 12px;">
+            <a href="@Url.Action("RequestCard")" class="btn btn-primary">➕ New Request</a>
+            <a href="@Url.Action("MyCards")" class="btn btn-outline">← Back to Cards</a>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        @if (Model != null && Model.Any())
+        {
+            <table>
+                <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Card Type</th>
+                        <th>Requested Limit</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Requested Date</th>
+                        <th>Processed Date</th>
+                        <th>Processed By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var request in Model)
+                    {
+                        <tr>
+                            <td style="font-family: monospace;">#REQ@request.RequestId</td>
+                            <td>
+                                @if (request.CardType == "Debit")
+                                {
+                                    <span>💳 Debit Card</span>
+                                }
+                                else
+                                {
+                                    <span>💎 Credit Card</span>
+                                }
+                            </td>
+                            <td>
+                                @if (request.RequestedLimit.HasValue)
+                                {
+                                    <strong>$@request.RequestedLimit.Value.ToString("N2")</strong>
+                                }
+                                else
+                                {
+                                    <span style="color: #94a3b8;">No limit specified</span>
+                                }
+                            </td>
+                            <td style="max-width: 250px;">
+                                @if (!string.IsNullOrEmpty(request.Reason))
+                                {
+                                    <span>@request.Reason</span>
+                                }
+                                else
+                                {
+                                    <span style="color: #94a3b8;">-</span>
+                                }
+                            </td>
+                            <td>
+                                @if (request.Status == "Pending")
+                                {
+                                    <span class="status-badge status-pending">⏳ Pending</span>
+                                }
+                                else if (request.Status == "Approved")
+                                {
+                                    <span class="status-badge status-active">✅ Approved</span>
+                                }
+                                else if (request.Status == "Rejected")
+                                {
+                                    <span class="status-badge status-failed">❌ Rejected</span>
+                                }
+                            </td>
+                            <td style="color: #64748b;">@request.CreatedAt.ToString("MMM dd, yyyy")</td>
+                            <td style="color: #64748b;">
+                                @if (request.ApprovalDate.HasValue)
+                                {
+                                    @request.ApprovalDate.Value.ToString("MMM dd, yyyy")
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </td>
+                            <td>
+                                @if (request.Approver != null)
+                                {
+                                    <span>@request.Approver.FullName</span>
+                                }
+                                else
+                                {
+                                    <span style="color: #94a3b8;">-</span>
+                                }
+                            </td>
+                        </tr>
+                        @if (request.Status == "Rejected" && !string.IsNullOrEmpty(request.RejectionReason))
+                        {
+                            <tr style="background: #fef2f2;">
+                                <td colspan="8" style="padding: 12px;">
+                                    <strong style="color: #dc2626;">Rejection Reason:</strong> @request.RejectionReason
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div style="text-align: center; padding: 60px; color: #64748b;">
+                <div style="font-size: 64px; margin-bottom: 20px;">📋</div>
+                <h3>No Card Requests</h3>
+                <p>You haven't requested any cards yet.</p>
+                <a href="@Url.Action("RequestCard")" class="btn btn-primary" style="margin-top: 20px;">➕ Request Your First Card</a>
+            </div>
+        }
+    </div>
+</div>

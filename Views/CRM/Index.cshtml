@@ -1,0 +1,163 @@
+@model IEnumerable<BankAndFinance.Models.CRMCustomer>
+
+@{
+    ViewBag.Title = "CRM";
+    ViewBag.PageTitle = "Customer Relationship Management";
+    ViewBag.Breadcrumb = "Home / ERP / CRM";
+}
+
+<div class="stats-grid" style="margin-bottom: 24px;">
+    <div class="stat-card" style="border-left: 4px solid #6366f1;">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white;">🤝</div>
+        <div class="stat-label">Total Customers</div>
+        <div class="stat-value" style="color: #6366f1;">@ViewBag.TotalCustomers</div>
+        <div class="stat-change">All Leads</div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid #10b981;">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">✅</div>
+        <div class="stat-label">Qualified Leads</div>
+        <div class="stat-value" style="color: #10b981;">@ViewBag.QualifiedLeads</div>
+        <div class="stat-change">Ready to Convert</div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid #8b5cf6;">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;">💰</div>
+        <div class="stat-label">Total Deal Value</div>
+        <div class="stat-value" style="color: #8b5cf6;">$@ViewBag.TotalDealValue?.ToString("N2")</div>
+        <div class="stat-change">Pipeline Value</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">🤝 Customer Database</div>
+        <a href="@Url.Action("Create", "CRM")" class="btn btn-primary">➕ Add Customer</a>
+    </div>
+    
+    <div class="filter-bar">
+        <input type="text" class="filter-input" id="searchCustomer" placeholder="Search by name, email or company...">
+        <select class="filter-select" id="filterLeadStatus">
+            <option value="">All Lead Status</option>
+            <option value="New">New</option>
+            <option value="Contacted">Contacted</option>
+            <option value="Qualified">Qualified</option>
+            <option value="Converted">Converted</option>
+            <option value="Lost">Lost</option>
+        </select>
+        <select class="filter-select" id="filterIndustry">
+            <option value="">All Industries</option>
+            <option value="Technology">Technology</option>
+            <option value="Finance">Finance</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Retail">Retail</option>
+            <option value="Manufacturing">Manufacturing</option>
+        </select>
+        <select class="filter-select" id="filterLeadSource">
+            <option value="">All Sources</option>
+            <option value="Website">Website</option>
+            <option value="Referral">Referral</option>
+            <option value="Social Media">Social Media</option>
+            <option value="Cold Call">Cold Call</option>
+        </select>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Customer Name</th>
+                    <th>Email</th>
+                    <th>Company</th>
+                    <th>Industry</th>
+                    <th>Lead Status</th>
+                    <th>Lead Source</th>
+                    <th>Deal Value</th>
+                    <th style="text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var customer in Model)
+                {
+                    <tr>
+                        <td><strong>@customer.CustomerName</strong></td>
+                        <td>@customer.Email</td>
+                        <td>@customer.Company</td>
+                        <td>@customer.Industry</td>
+                        <td><span class="status-badge status-@customer.LeadStatus.ToLower()">@customer.LeadStatus</span></td>
+                        <td>@customer.LeadSource</td>
+                        <td><strong>@(customer.DealValue.HasValue ? "$" + customer.DealValue.Value.ToString("N2") : "-")</strong></td>
+                        <td style="text-align: center;">
+                            <a href="@Url.Action("Edit", "CRM", new { id = customer.CRMCustomerId })" class="btn-edit">✏️ Edit</a>
+                            <form method="post" action="@Url.Action("Delete", "CRM")" style="display: inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@customer.CRMCustomerId" />
+                                <button type="submit" class="btn-delete" onclick="return confirm('Delete this customer?')">🗑️ Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+// Real-time filtering for CRM
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchCustomer');
+    const filterLeadStatus = document.getElementById('filterLeadStatus');
+    const filterIndustry = document.getElementById('filterIndustry');
+    const filterLeadSource = document.getElementById('filterLeadSource');
+    const tableRows = document.querySelectorAll('tbody tr');
+
+    function filterCustomers() {
+        const searchValue = searchInput.value.toLowerCase();
+        const statusValue = filterLeadStatus.value.toLowerCase();
+        const industryValue = filterIndustry.value.toLowerCase();
+        const sourceValue = filterLeadSource.value.toLowerCase();
+
+        let visibleCount = 0;
+
+        tableRows.forEach(row => {
+            const customerName = row.cells[0].textContent.toLowerCase();
+            const email = row.cells[1].textContent.toLowerCase();
+            const company = row.cells[2].textContent.toLowerCase();
+            const industry = row.cells[3].textContent.toLowerCase();
+            const leadStatus = row.cells[4].textContent.trim().toLowerCase();
+            const leadSource = row.cells[5].textContent.toLowerCase();
+
+            let showRow = true;
+
+            // Filter by search
+            if (searchValue && !customerName.includes(searchValue) && !email.includes(searchValue) && !company.includes(searchValue)) {
+                showRow = false;
+            }
+
+            // Filter by lead status
+            if (statusValue && !leadStatus.includes(statusValue)) {
+                showRow = false;
+            }
+
+            // Filter by industry
+            if (industryValue && industry !== industryValue) {
+                showRow = false;
+            }
+
+            // Filter by lead source
+            if (sourceValue && leadSource !== sourceValue) {
+                showRow = false;
+            }
+
+            row.style.display = showRow ? '' : 'none';
+            if (showRow) visibleCount++;
+        });
+
+        console.log(`Showing ${visibleCount} of ${tableRows.length} customers`);
+    }
+
+    // Add event listeners
+    searchInput.addEventListener('input', filterCustomers);
+    filterLeadStatus.addEventListener('change', filterCustomers);
+    filterIndustry.addEventListener('change', filterCustomers);
+    filterLeadSource.addEventListener('change', filterCustomers);
+});
+</script>

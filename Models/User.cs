@@ -34,6 +34,10 @@ namespace BankAndFinance.Models
         [StringLength(20)]
         public string Status { get; set; } = "Active";
 
+        [Column("profile_photo")]
+        [StringLength(255)]
+        public string? ProfilePhoto { get; set; }
+
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
@@ -41,7 +45,6 @@ namespace BankAndFinance.Models
         [ForeignKey("RoleId")]
         public virtual Role? Role { get; set; }
         
-        public virtual BankAccount? BankAccount { get; set; }
         public virtual CustomerProfile? CustomerProfile { get; set; }
         public virtual ICollection<AccountsPayable> AccountsPayables { get; set; } = new List<AccountsPayable>();
         public virtual ICollection<AccountsReceivable> AccountsReceivables { get; set; } = new List<AccountsReceivable>();

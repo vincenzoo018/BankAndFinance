@@ -274,4 +274,48 @@ document.getElementById('receiptModal')?.addEventListener('click', function(e) {
         closeReceiptModal();
     }
 });
+
+// Real-time filtering functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const filterDate = document.getElementById('filterDate');
+    const filterType = document.getElementById('filterType');
+    const filterStatus = document.getElementById('filterStatus');
+    const tableRows = document.querySelectorAll('tbody tr');
+
+    function filterTransactions() {
+        const dateValue = filterDate.value;
+        const typeValue = filterType.value.toLowerCase();
+        const statusValue = filterStatus.value.toLowerCase();
+
+        tableRows.forEach(row => {
+            const rowDate = row.cells[3].textContent.split(' ')[0]; // Extract date part
+            const rowType = row.cells[1].textContent.trim().toLowerCase();
+            const rowStatus = row.cells[4].textContent.trim().toLowerCase();
+
+            let showRow = true;
+
+            // Filter by date
+            if (dateValue && rowDate !== dateValue) {
+                showRow = false;
+            }
+
+            // Filter by type
+            if (typeValue && !rowType.includes(typeValue)) {
+                showRow = false;
+            }
+
+            // Filter by status
+            if (statusValue && !rowStatus.includes(statusValue)) {
+                showRow = false;
+            }
+
+            row.style.display = showRow ? '' : 'none';
+        });
+    }
+
+    // Add event listeners
+    filterDate.addEventListener('change', filterTransactions);
+    filterType.addEventListener('change', filterTransactions);
+    filterStatus.addEventListener('change', filterTransactions);
+});
 </script>

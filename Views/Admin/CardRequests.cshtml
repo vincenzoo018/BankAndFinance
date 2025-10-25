@@ -1,0 +1,210 @@
+@model List<BankAndFinance.Models.CardRequest>
+@{
+    ViewData["Title"] = "Card Requests";
+    ViewBag.PageTitle = "Card Requests";
+    ViewBag.Breadcrumb = "Banking / Card Requests";
+}
+
+<div class="card fade-in">
+    <div class="card-header">
+        <div class="card-title">📋 Card Request Approval</div>
+    </div>
+    <div style="padding: 20px;">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">@TempData["Success"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-error">@TempData["Error"]</div>
+        }
+
+        <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+            <div style="flex: 1; background: #fef3c7; border-radius: 12px; padding: 20px;">
+                <div style="font-size: 14px; color: #92400e;">Pending Requests</div>
+                <div style="font-size: 32px; font-weight: 700; color: #d97706; margin-top: 8px;">
+                    @Model.Count(r => r.Status == "Pending")
+                </div>
+            </div>
+            <div style="flex: 1; background: #dcfce7; border-radius: 12px; padding: 20px;">
+                <div style="font-size: 14px; color: #065f46;">Approved</div>
+                <div style="font-size: 32px; font-weight: 700; color: #16a34a; margin-top: 8px;">
+                    @Model.Count(r => r.Status == "Approved")
+                </div>
+            </div>
+            <div style="flex: 1; background: #fee2e2; border-radius: 12px; padding: 20px;">
+                <div style="font-size: 14px; color: #7f1d1d;">Rejected</div>
+                <div style="font-size: 32px; font-weight: 700; color: #dc2626; margin-top: 8px;">
+                    @Model.Count(r => r.Status == "Rejected")
+                </div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Request ID</th>
+                    <th>Customer</th>
+                    <th>Card Type</th>
+                    <th>Requested Limit</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var request in Model)
+                    {
+                        <tr>
+                            <td style="font-family: monospace;">#REQ@request.RequestId</td>
+                            <td>
+                                <div style="font-weight: 600;">@request.User?.FullName</div>
+                                <div style="font-size: 12px; color: #64748b;">@request.User?.Email</div>
+                                <div style="font-size: 12px; color: #64748b;">Acc: @request.Account?.AccountNumber</div>
+                            </td>
+                            <td>
+                                @if (request.CardType == "Debit")
+                                {
+                                    <span style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 6px 12px; border-radius: 6px;">💳 Debit</span>
+                                }
+                                else
+                                {
+                                    <span style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 6px 12px; border-radius: 6px;">💎 Credit</span>
+                                }
+                            </td>
+                            <td>
+                                @if (request.RequestedLimit.HasValue)
+                                {
+                                    <strong>$@request.RequestedLimit.Value.ToString("N2")</strong>
+                                }
+                                else
+                                {
+                                    <span style="color: #94a3b8;">Default</span>
+                                }
+                            </td>
+                            <td style="max-width: 200px;">
+                                @if (!string.IsNullOrEmpty(request.Reason))
+                                {
+                                    <span>@request.Reason</span>
+                                }
+                                else
+                                {
+                                    <span style="color: #94a3b8;">-</span>
+                                }
+                            </td>
+                            <td>
+                                @if (request.Status == "Pending")
+                                {
+                                    <span class="status-badge status-pending">⏳ Pending</span>
+                                }
+                                else if (request.Status == "Approved")
+                                {
+                                    <span class="status-badge status-active">✅ Approved</span>
+                                }
+                                else if (request.Status == "Rejected")
+                                {
+                                    <span class="status-badge status-failed">❌ Rejected</span>
+                                }
+                            </td>
+                            <td style="color: #64748b;">
+                                <div>@request.CreatedAt.ToString("MMM dd, yyyy")</div>
+                                <div style="font-size: 12px;">@request.CreatedAt.ToString("hh:mm tt")</div>
+                            </td>
+                            <td>
+                                @if (request.Status == "Pending")
+                                {
+                                    <div style="display: flex; gap: 8px;">
+                                        <form method="post" asp-action="ApproveCardRequest" style="display: inline;">
+                                            <input type="hidden" name="requestId" value="@request.RequestId" />
+                                            <button type="submit" class="btn btn-sm" style="background: #10b981; color: white;" onclick="return confirm('Approve this card request?')">
+                                                ✅ Approve
+                                            </button>
+                                        </form>
+                                        <button class="btn btn-sm" style="background: #ef4444; color: white;" onclick="showRejectModal(@request.RequestId)">
+                                            ❌ Reject
+                                        </button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div>
+                                        <div style="font-size: 12px; color: #64748b;">By: @request.Approver?.FullName</div>
+                                        <div style="font-size: 12px; color: #64748b;">@request.ApprovalDate?.ToString("MMM dd, yyyy")</div>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px; color: #64748b;">
+                            No card requests found
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Rejection Modal -->
+<div id="rejectModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 16px; padding: 32px; max-width: 500px; width: 90%;">
+        <h3 style="margin: 0 0 20px 0;">Reject Card Request</h3>
+        <form method="post" asp-action="RejectCardRequest" id="rejectForm">
+            <input type="hidden" name="requestId" id="rejectRequestId" />
+            <div class="form-group">
+                <label for="rejectionReason">Rejection Reason</label>
+                <textarea class="form-input" name="rejectionReason" id="rejectionReason" rows="4" required placeholder="Explain why this request is being rejected..."></textarea>
+            </div>
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="submit" class="btn" style="flex: 1; background: #ef4444; color: white;">❌ Reject Request</button>
+                <button type="button" class="btn btn-outline" style="flex: 1;" onclick="closeRejectModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .alert-success {
+        background: #dcfce7;
+        color: #16a34a;
+        padding: 12px 16px;
+        border-radius: 8px;
+        border-left: 4px solid #16a34a;
+        margin-bottom: 20px;
+    }
+    
+    .alert-error {
+        background: #fee2e2;
+        color: #dc2626;
+        padding: 12px 16px;
+        border-radius: 8px;
+        border-left: 4px solid #dc2626;
+        margin-bottom: 20px;
+    }
+</style>
+
+<script>
+function showRejectModal(requestId) {
+    document.getElementById('rejectRequestId').value = requestId;
+    document.getElementById('rejectModal').style.display = 'flex';
+}
+
+function closeRejectModal() {
+    document.getElementById('rejectModal').style.display = 'none';
+    document.getElementById('rejectionReason').value = '';
+}
+
+// Close on outside click
+document.getElementById('rejectModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeRejectModal();
+    }
+});
+</script>

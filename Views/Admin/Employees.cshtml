@@ -1,0 +1,152 @@
+@model IEnumerable<BankAndFinance.Models.User>
+@{
+    ViewData["Title"] = "Employees";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Employee Management</h5>
+                        <a href="@Url.Action("CreateEmployee")" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus"></i> Add New Employee
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show mx-4 mt-3" role="alert">
+                            <strong>Success!</strong> @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show mx-4 mt-3" role="alert">
+                            <strong>Error!</strong> @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Employee</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Email</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Created</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    foreach (var employee in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex px-2 py-1">
+                                                    <div>
+                                                        <div class="avatar avatar-sm me-3 bg-gradient-info">
+                                                            <span class="text-white text-sm">@employee.FullName.Substring(0, 1)</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex flex-column justify-content-center">
+                                                        <h6 class="mb-0 text-sm">@employee.FullName</h6>
+                                                        <p class="text-xs text-secondary mb-0">ID: @employee.UserId</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <p class="text-xs font-weight-bold mb-0">@employee.Email</p>
+                                            </td>
+                                            <td class="align-middle text-center text-sm">
+                                                @if (employee.Status == "Active")
+                                                {
+                                                    <span class="badge badge-sm bg-gradient-success">Active</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-sm bg-gradient-secondary">Inactive</span>
+                                                }
+                                            </td>
+                                            <td class="align-middle text-center">
+                                                <span class="text-secondary text-xs font-weight-bold">@employee.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                            </td>
+                                            <td class="align-middle text-center">
+                                                <a href="@Url.Action("EditEmployee", new { id = employee.UserId })" 
+                                                   class="btn btn-sm btn-info mb-0" 
+                                                   data-bs-toggle="tooltip" 
+                                                   title="Edit Employee">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                
+                                                @if (employee.Status == "Active")
+                                                {
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-warning mb-0" 
+                                                            onclick="toggleStatus(@employee.UserId, 'Inactive', '@employee.FullName')"
+                                                            data-bs-toggle="tooltip" 
+                                                            title="Deactivate">
+                                                        <i class="fas fa-ban"></i> Deactivate
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-success mb-0" 
+                                                            onclick="toggleStatus(@employee.UserId, 'Active', '@employee.FullName')"
+                                                            data-bs-toggle="tooltip" 
+                                                            title="Activate">
+                                                        <i class="fas fa-check"></i> Activate
+                                                    </button>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">
+                                            <p class="text-secondary mb-0">No employees found</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form for status toggle -->
+<form id="statusForm" method="post" action="@Url.Action("ToggleEmployeeStatus")" style="display: none;">
+    <input type="hidden" name="userId" id="statusUserId" />
+    <input type="hidden" name="status" id="statusValue" />
+</form>
+
+@section Scripts {
+    <script>
+        function toggleStatus(userId, status, fullName) {
+            const action = status === 'Active' ? 'activate' : 'deactivate';
+            if (confirm(`Are you sure you want to ${action} ${fullName}?`)) {
+                document.getElementById('statusUserId').value = userId;
+                document.getElementById('statusValue').value = status;
+                document.getElementById('statusForm').submit();
+            }
+        }
+
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+}

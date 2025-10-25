@@ -1,0 +1,195 @@
+@model IEnumerable<BankAndFinance.Models.Project>
+
+@{
+    ViewBag.Title = "Project Management";
+    ViewBag.PageTitle = "Project Management";
+    ViewBag.Breadcrumb = "Home / ERP / Projects";
+}
+
+<div class="stats-grid" style="margin-bottom: 24px;">
+    <div class="stat-card" style="border-left: 4px solid #6366f1;">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white;">📊</div>
+        <div class="stat-label">Total Projects</div>
+        <div class="stat-value" style="color: #6366f1;">@ViewBag.TotalProjects</div>
+        <div class="stat-change">All Projects</div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid #10b981;">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">⚡</div>
+        <div class="stat-label">Active Projects</div>
+        <div class="stat-value" style="color: #10b981;">@ViewBag.ActiveProjects</div>
+        <div class="stat-change">In Progress</div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid #8b5cf6;">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;">💰</div>
+        <div class="stat-label">Total Budget</div>
+        <div class="stat-value" style="color: #8b5cf6;">$@ViewBag.TotalBudget?.ToString("N2")</div>
+        <div class="stat-change">Allocated Funds</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">📊 Project Portfolio</div>
+        <a href="@Url.Action("Create", "Project")" class="btn btn-primary">➕ Add Project</a>
+    </div>
+    
+    <div class="filter-bar">
+        <input type="text" class="filter-input" id="searchProject" placeholder="Search by project code, name or client...">
+        <select class="filter-select" id="filterStatus">
+            <option value="">All Status</option>
+            <option value="Planning">Planning</option>
+            <option value="In Progress">In Progress</option>
+            <option value="On Hold">On Hold</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+        </select>
+        <select class="filter-select" id="filterPriority">
+            <option value="">All Priorities</option>
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+            <option value="Critical">Critical</option>
+        </select>
+        <input type="date" class="filter-input" id="filterStartDate" placeholder="Start Date">
+        <input type="date" class="filter-input" id="filterEndDate" placeholder="End Date">
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Project Code</th>
+                    <th>Project Name</th>
+                    <th>Client</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Progress</th>
+                    <th>Budget</th>
+                    <th style="text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var project in Model)
+                {
+                    <tr>
+                        <td><strong>@project.ProjectCode</strong></td>
+                        <td>@project.ProjectName</td>
+                        <td>@project.ClientName</td>
+                        <td>@(project.StartDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+                        <td>@(project.EndDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+                        <td><span class="status-badge status-@project.Status.ToLower().Replace(" ", "-")">@project.Status</span></td>
+                        <td>
+                            <span class="status-badge" style="background: @GetPriorityColor(project.Priority); color: white;">
+                                @project.Priority
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="flex: 1; background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden;">
+                                    <div style="width: @project.CompletionPercentage%; background: linear-gradient(90deg, #10b981, #059669); height: 100%;"></div>
+                                </div>
+                                <span style="font-size: 12px; font-weight: 600; color: #64748b;">@project.CompletionPercentage%</span>
+                            </div>
+                        </td>
+                        <td><strong>@(project.Budget.HasValue ? "$" + project.Budget.Value.ToString("N2") : "-")</strong></td>
+                        <td style="text-align: center;">
+                            <a href="@Url.Action("Edit", "Project", new { id = project.ProjectId })" class="btn-edit">✏️ Edit</a>
+                            <form method="post" action="@Url.Action("Delete", "Project")" style="display: inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@project.ProjectId" />
+                                <button type="submit" class="btn-delete" onclick="return confirm('Delete this project?')">🗑️ Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@functions {
+    string GetPriorityColor(string priority)
+    {
+        return priority switch
+        {
+            "Low" => "#10b981",
+            "Medium" => "#f59e0b",
+            "High" => "#ef4444",
+            "Critical" => "#dc2626",
+            _ => "#64748b"
+        };
+    }
+}
+
+<script>
+// Real-time filtering for Projects
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchProject');
+    const filterStatus = document.getElementById('filterStatus');
+    const filterPriority = document.getElementById('filterPriority');
+    const filterStartDate = document.getElementById('filterStartDate');
+    const filterEndDate = document.getElementById('filterEndDate');
+    const tableRows = document.querySelectorAll('tbody tr');
+
+    function filterProjects() {
+        const searchValue = searchInput.value.toLowerCase();
+        const statusValue = filterStatus.value.toLowerCase();
+        const priorityValue = filterPriority.value.toLowerCase();
+        const startDateValue = filterStartDate.value;
+        const endDateValue = filterEndDate.value;
+
+        let visibleCount = 0;
+
+        tableRows.forEach(row => {
+            const projectCode = row.cells[0].textContent.toLowerCase();
+            const projectName = row.cells[1].textContent.toLowerCase();
+            const clientName = row.cells[2].textContent.toLowerCase();
+            const startDate = row.cells[3].textContent;
+            const endDate = row.cells[4].textContent;
+            const status = row.cells[5].textContent.trim().toLowerCase();
+            const priority = row.cells[6].textContent.trim().toLowerCase();
+
+            let showRow = true;
+
+            // Filter by search
+            if (searchValue && !projectCode.includes(searchValue) && !projectName.includes(searchValue) && !clientName.includes(searchValue)) {
+                showRow = false;
+            }
+
+            // Filter by status
+            if (statusValue && !status.includes(statusValue)) {
+                showRow = false;
+            }
+
+            // Filter by priority
+            if (priorityValue && !priority.includes(priorityValue)) {
+                showRow = false;
+            }
+
+            // Filter by start date
+            if (startDateValue && startDate !== startDateValue && startDate !== '-') {
+                showRow = false;
+            }
+
+            // Filter by end date
+            if (endDateValue && endDate !== endDateValue && endDate !== '-') {
+                showRow = false;
+            }
+
+            row.style.display = showRow ? '' : 'none';
+            if (showRow) visibleCount++;
+        });
+
+        console.log(`Showing ${visibleCount} of ${tableRows.length} projects`);
+    }
+
+    // Add event listeners
+    searchInput.addEventListener('input', filterProjects);
+    filterStatus.addEventListener('change', filterProjects);
+    filterPriority.addEventListener('change', filterProjects);
+    filterStartDate.addEventListener('change', filterProjects);
+    filterEndDate.addEventListener('change', filterProjects);
+});
+</script>

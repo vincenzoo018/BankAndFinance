@@ -27,6 +27,8 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IBankingService, BankingService>();
+builder.Services.AddScoped<IPayMongoService, PayMongoService>();
+builder.Services.AddScoped<ICardService, CardService>();
 
 var app = builder.Build();
 

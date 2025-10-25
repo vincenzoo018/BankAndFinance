@@ -1,0 +1,154 @@
+@model IEnumerable<BankAndFinance.Models.Employee>
+
+@{
+    ViewBag.Title = "Human Resources";
+    ViewBag.PageTitle = "Human Resources Management";
+    ViewBag.Breadcrumb = "Home / ERP / HR";
+}
+
+<div class="stats-grid" style="margin-bottom: 24px;">
+    <div class="stat-card" style="border-left: 4px solid #6366f1;">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white;">👥</div>
+        <div class="stat-label">Total Employees</div>
+        <div class="stat-value" style="color: #6366f1;">@ViewBag.TotalEmployees</div>
+        <div class="stat-change">All Employees</div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid #10b981;">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">✅</div>
+        <div class="stat-label">Active Employees</div>
+        <div class="stat-value" style="color: #10b981;">@ViewBag.ActiveEmployees</div>
+        <div class="stat-change">Currently Working</div>
+    </div>
+    <div class="stat-card" style="border-left: 4px solid #8b5cf6;">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white;">🏢</div>
+        <div class="stat-label">Departments</div>
+        <div class="stat-value" style="color: #8b5cf6;">@ViewBag.Departments</div>
+        <div class="stat-change">Active Departments</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">👥 Employee Directory</div>
+        <a href="@Url.Action("Create", "HR")" class="btn btn-primary">➕ Add Employee</a>
+    </div>
+    
+    <div class="filter-bar">
+        <input type="text" class="filter-input" id="searchEmployee" placeholder="Search by name or employee number...">
+        <select class="filter-select" id="filterDepartment">
+            <option value="">All Departments</option>
+            <option value="Banking Operations">Banking Operations</option>
+            <option value="Finance">Finance</option>
+            <option value="Accounting">Accounting</option>
+            <option value="IT">IT</option>
+            <option value="HR">HR</option>
+        </select>
+        <select class="filter-select" id="filterStatus">
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="Terminated">Terminated</option>
+        </select>
+        <input type="date" class="filter-input" id="filterHireDate" placeholder="Hire Date">
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Employee #</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Position</th>
+                    <th>Hire Date</th>
+                    <th>Salary</th>
+                    <th>Status</th>
+                    <th style="text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var employee in Model)
+                {
+                    <tr>
+                        <td><strong>@employee.EmployeeNumber</strong></td>
+                        <td>@employee.User?.FullName</td>
+                        <td>@employee.Department</td>
+                        <td>@employee.Position</td>
+                        <td>@employee.HireDate.ToString("yyyy-MM-dd")</td>
+                        <td><strong>$@employee.Salary.ToString("N2")</strong></td>
+                        <td><span class="status-badge status-@employee.EmploymentStatus.ToLower()">@employee.EmploymentStatus</span></td>
+                        <td style="text-align: center;">
+                            <a href="@Url.Action("Edit", "HR", new { id = employee.EmployeeId })" class="btn-edit">✏️ Edit</a>
+                            <form method="post" action="@Url.Action("Delete", "HR")" style="display: inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@employee.EmployeeId" />
+                                <button type="submit" class="btn-delete" onclick="return confirm('Delete this employee?')">🗑️ Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+// Real-time filtering for HR
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchEmployee');
+    const filterDepartment = document.getElementById('filterDepartment');
+    const filterStatus = document.getElementById('filterStatus');
+    const filterHireDate = document.getElementById('filterHireDate');
+    const tableRows = document.querySelectorAll('tbody tr');
+
+    function filterEmployees() {
+        const searchValue = searchInput.value.toLowerCase();
+        const deptValue = filterDepartment.value.toLowerCase();
+        const statusValue = filterStatus.value.toLowerCase();
+        const dateValue = filterHireDate.value;
+
+        let visibleCount = 0;
+
+        tableRows.forEach(row => {
+            const empNumber = row.cells[0].textContent.toLowerCase();
+            const empName = row.cells[1].textContent.toLowerCase();
+            const empDept = row.cells[2].textContent.toLowerCase();
+            const empHireDate = row.cells[4].textContent;
+            const empStatus = row.cells[6].textContent.trim().toLowerCase();
+
+            let showRow = true;
+
+            // Filter by search
+            if (searchValue && !empNumber.includes(searchValue) && !empName.includes(searchValue)) {
+                showRow = false;
+            }
+
+            // Filter by department
+            if (deptValue && empDept !== deptValue) {
+                showRow = false;
+            }
+
+            // Filter by status
+            if (statusValue && !empStatus.includes(statusValue)) {
+                showRow = false;
+            }
+
+            // Filter by hire date
+            if (dateValue && empHireDate !== dateValue) {
+                showRow = false;
+            }
+
+            row.style.display = showRow ? '' : 'none';
+            if (showRow) visibleCount++;
+        });
+
+        console.log(`Showing ${visibleCount} of ${tableRows.length} employees`);
+    }
+
+    // Add event listeners
+    searchInput.addEventListener('input', filterEmployees);
+    filterDepartment.addEventListener('change', filterEmployees);
+    filterStatus.addEventListener('change', filterEmployees);
+    filterHireDate.addEventListener('change', filterEmployees);
+});
+</script>

@@ -33,42 +33,55 @@
             --border: #e2e8f0;
         }
 
-        /* Admin Sidebar - Purple Gradient */
+        /* Admin Sidebar - White Theme */
         .sidebar {
-            background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
-            box-shadow: 4px 0 24px rgba(139, 92, 246, 0.15) !important;
+            background: #ffffff !important;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.06) !important;
+            border-right: 1px solid var(--border);
         }
 
         .logo {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-bottom: 1px solid var(--border) !important;
         }
 
         .logo-icon {
-            background: rgba(255, 255, 255, 0.2) !important;
-            border: 2px solid rgba(255, 255, 255, 0.3) !important;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark)) !important;
+            border: none !important;
         }
-
-        .nav-item {
-            color: rgba(255, 255, 255, 0.9) !important;
+        
+        .logo-text {
+            color: var(--text-primary) !important;
         }
-
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.15) !important;
-            color: white !important;
+        
+        .logo-subtitle {
+            color: var(--text-secondary) !important;
         }
-
-        .nav-item.active {
-            background: rgba(255, 255, 255, 0.25) !important;
-            color: white !important;
-            border-left: 4px solid white !important;
-        }
-
+        
         .nav-section-title {
-            color: rgba(255, 255, 255, 0.6) !important;
+            color: var(--text-tertiary) !important;
+        }
+        
+        .nav-item {
+            color: var(--text-primary) !important;
+        }
+        
+        .nav-item:hover {
+            background: var(--bg-secondary) !important;
+            color: var(--primary) !important;
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(135deg, #f3e8ff, #ede9fe) !important;
+            color: var(--primary) !important;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .nav-icon {
+            opacity: 0.8;
         }
 
         .nav-dropdown {
-            background: rgba(0, 0, 0, 0.1) !important;
+            background: var(--bg-secondary) !important;
         }
 
         /* Main content gradient */
@@ -156,6 +169,8 @@
             </div>
             <div class="nav-dropdown" id="banking">
                 <a class="nav-item nav-sub-item" href="@Url.Action("BankAccounts", "Admin")">Bank Accounts</a>
+                <a class="nav-item nav-sub-item" href="@Url.Action("Cards", "Admin")">All Cards</a>
+                <a class="nav-item nav-sub-item" href="@Url.Action("CardRequests", "Admin")">Card Requests</a>
                 <a class="nav-item nav-sub-item" href="@Url.Action("Transactions", "Admin")">Transactions</a>
                 <a class="nav-item nav-sub-item" href="@Url.Action("Transfers", "Admin")">Transfers</a>
                 <a class="nav-item nav-sub-item" href="@Url.Action("Payments", "Admin")">Bill Payments</a>
@@ -269,5 +284,7 @@
             document.querySelector('.sidebar').classList.toggle('active');
         }
     </script>
+
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

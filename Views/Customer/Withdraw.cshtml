@@ -35,22 +35,32 @@
             </div>
             
             <div class="form-group">
-                <label for="paymentMode">Payment Mode</label>
-                <select class="form-select" id="paymentMode" name="paymentMode" required style="padding: 12px;">
-                    <option value="Cash">💵 Cash</option>
-                    <option value="Card">💳 Card</option>
-                    <option value="QR Code">📱 QR Code</option>
-                    <option value="Bank Transfer">🏦 Bank Transfer</option>
-                </select>
-            </div>
-            
-            <div class="form-group" id="qrSection" style="display: none;">
-                <label>Scan QR Code</label>
-                <div style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 12px;">
-                    <div style="font-size: 120px;">📱</div>
-                    <p style="color: #64748b; margin-top: 12px;">QR Code: <span id="qrCodeText">WITHDRAW-@DateTime.Now.Ticks</span></p>
-                    <input type="hidden" id="qrCode" name="qrCode" value="">
-                </div>
+                <label for="cardId">Select Card for Withdrawal</label>
+                @if (ViewBag.Cards != null && ((List<BankAndFinance.Models.Card>)ViewBag.Cards).Any())
+                {
+                    <select class="form-select" id="cardId" name="cardId" required style="padding: 12px;">
+                        <option value="">-- Select a Card --</option>
+                        @foreach (var card in (List<BankAndFinance.Models.Card>)ViewBag.Cards)
+                        {
+                            var cardType = card.CardType == "Debit" ? "💳" : "💎";
+                            var lastFour = card.CardNumber.Substring(card.CardNumber.Length - 4);
+                            <option value="@card.CardId">@cardType @card.CardType - **** @lastFour</option>
+                        }
+                    </select>
+                    <p style="color: #64748b; font-size: 13px; margin-top: 8px;">
+                        ℹ️ Select the card you want to use for this withdrawal
+                    </p>
+                }
+                else
+                {
+                    <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 16px; margin-top: 10px;">
+                        <p style="color: #92400e; margin: 0; font-weight: 500;">⚠️ No active cards found</p>
+                        <p style="color: #78350f; margin: 8px 0 0 0; font-size: 14px;">
+                            You need to request a card first before making withdrawals. 
+                            <a href="@Url.Action("MyCards", "Card")" style="color: #d97706; text-decoration: underline;">Request a card here</a>
+                        </p>
+                    </div>
+                }
             </div>
             
             <div style="margin-top: 30px;">
@@ -99,21 +109,6 @@
 </div>
 
 <script>
-// Show/hide QR section
-document.getElementById('paymentMode')?.addEventListener('change', function() {
-    const qrSection = document.getElementById('qrSection');
-    const qrCodeInput = document.getElementById('qrCode');
-    const qrCodeText = document.getElementById('qrCodeText').textContent;
-    
-    if (this.value === 'QR Code') {
-        qrSection.style.display = 'block';
-        qrCodeInput.value = qrCodeText;
-    } else {
-        qrSection.style.display = 'none';
-        qrCodeInput.value = '';
-    }
-});
-
 function showWithdrawConfirmation() {
     const form = document.getElementById('withdrawForm');
     if (!form.checkValidity()) {

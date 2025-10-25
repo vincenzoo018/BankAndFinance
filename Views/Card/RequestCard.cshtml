@@ -23,14 +23,34 @@
             </div>
         </div>
 
+        @if (ViewBag.PendingRequests != null && ((List<BankAndFinance.Models.CardRequest>)ViewBag.PendingRequests).Any())
+        {
+            <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                <h4 style="margin: 0 0 12px 0; color: #92400e;">⏳ You have @((ViewBag.PendingRequests as List<BankAndFinance.Models.CardRequest>).Count) pending request(s)</h4>
+                <p style="color: #78350f; margin: 0; font-size: 14px;">Your card requests are being reviewed by an administrator. You'll be notified once approved.</p>
+                <a href="@Url.Action("MyRequests")" class="btn btn-outline" style="margin-top: 12px; background: white;">View My Requests</a>
+            </div>
+        }
+
         <form method="post" asp-action="RequestCard" id="cardRequestForm" onsubmit="return confirmRequest()">
             <div class="form-group">
                 <label for="cardType">Select Card Type</label>
                 <select class="form-select" id="cardType" name="cardType" required style="padding: 16px; font-size: 16px;">
                     <option value="">-- Choose a card type --</option>
                     <option value="Debit">💳 Debit Card - Instant access to your balance</option>
-                    <option value="Credit">💎 Credit Card - $5,000 credit limit</option>
+                    <option value="Credit">💎 Credit Card - Build your credit</option>
                 </select>
+            </div>
+
+            <div class="form-group">
+                <label for="requestedLimit">Requested Card Limit (Optional for Credit Cards)</label>
+                <input type="number" class="form-input" id="requestedLimit" name="requestedLimit" step="0.01" min="0" placeholder="e.g., 5000.00" style="padding: 16px;">
+                <p style="color: #64748b; font-size: 13px; margin-top: 8px;">Leave blank for default limit. Subject to admin approval.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="reason">Reason for Request (Optional)</label>
+                <textarea class="form-input" id="reason" name="reason" rows="3" placeholder="e.g., Online shopping, Travel expenses, Emergency fund" style="padding: 16px;"></textarea>
             </div>
 
             <div class="form-group" style="background: #f8fafc; padding: 20px; border-radius: 12px;">
@@ -45,9 +65,15 @@
                 </ul>
             </div>
 
+            <div style="background: #fef3c7; padding: 16px; border-radius: 8px; margin-top: 20px;">
+                <p style="margin: 0; color: #92400e; font-size: 14px;">
+                    ℹ️ <strong>Please note:</strong> Card requests require admin approval. You'll receive a notification once your request is processed.
+                </p>
+            </div>
+
             <div style="margin-top: 32px; display: flex; gap: 12px;">
                 <button type="submit" class="btn btn-primary" style="flex: 1; padding: 16px; font-size: 16px;">
-                    ✅ Request Card
+                    ✅ Submit Request
                 </button>
                 <a href="@Url.Action("MyCards")" class="btn btn-outline" style="flex: 1; padding: 16px; font-size: 16px; text-align: center;">
                     Cancel

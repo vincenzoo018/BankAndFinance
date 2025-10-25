@@ -12,33 +12,27 @@ namespace BankAndFinance.Controllers
     {
         private readonly BFASDbContext _context;
         private readonly IAuditLogService _auditLog;
+        private readonly ICardService _cardService;
 
-        public CardController(BFASDbContext context, IAuditLogService auditLog)
+        public CardController(BFASDbContext context, IAuditLogService auditLog, ICardService cardService)
         {
             _context = context;
             _auditLog = auditLog;
+            _cardService = cardService;
         }
 
         // GET: Card/MyCards
         public async Task<IActionResult> MyCards()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
+            var cards = await _cardService.GetUserCardsAsync(userId.Value);
+            
             var account = await _context.BankAccounts
                 .FirstOrDefaultAsync(ba => ba.UserId == userId);
 
-            if (account == null)
-            {
-                TempData["Error"] = "Bank account not found";
-                return RedirectToAction("Dashboard", "Customer");
-            }
-
-            var cards = await _context.Cards
-                .Where(c => c.AccountId == account.AccountId)
-                .OrderByDescending(c => c.CreatedAt)
-                .ToListAsync();
-
-            ViewBag.Balance = account.Balance;
-            ViewBag.AccountNumber = account.AccountNumber;
+            ViewBag.Balance = account?.Balance ?? 0;
+            ViewBag.AccountNumber = account?.AccountNumber ?? "";
+            ViewBag.TotalCardBalance = cards.Sum(c => c.Balance);
             
             return View(cards);
         }
@@ -54,12 +48,18 @@ namespace BankAndFinance.Controllers
             ViewBag.AccountNumber = account?.AccountNumber;
             ViewBag.Balance = account?.Balance;
             
+            // Get pending requests
+            var pendingRequests = await _context.CardRequests
+                .Where(cr => cr.UserId == userId && cr.Status == "Pending")
+                .ToListAsync();
+            ViewBag.PendingRequests = pendingRequests;
+            
             return View();
         }
 
         // POST: Card/RequestCard
         [HttpPost]
-        public async Task<IActionResult> RequestCard(string cardType)
+        public async Task<IActionResult> RequestCard(string cardType, decimal? requestedLimit, string? reason)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             var account = await _context.BankAccounts
@@ -71,52 +71,42 @@ namespace BankAndFinance.Controllers
                 return RedirectToAction("MyCards");
             }
 
-            // Check if user already has a card of this type
-            var existingCard = await _context.Cards
-                .FirstOrDefaultAsync(c => c.AccountId == account.AccountId && c.CardType == cardType && c.CardStatus == "Active");
-
-            if (existingCard != null)
+            var result = await _cardService.RequestCardAsync(userId.Value, account.AccountId, cardType, requestedLimit, reason);
+            
+            if (result.Success)
             {
-                TempData["Error"] = $"You already have an active {cardType} card";
-                return RedirectToAction("MyCards");
+                await _auditLog.LogAsync($"Requested new {cardType} card", "Card Management");
+                TempData["Success"] = result.Message + " Waiting for admin approval.";
+            }
+            else
+            {
+                TempData["Error"] = result.Message;
             }
 
-            // Generate card number
-            var cardNumber = GenerateCardNumber();
-            var cvv = GenerateCVV();
-            var expiryDate = DateTime.Now.AddYears(3);
-
-            var card = new Card
-            {
-                AccountId = account.AccountId,
-                CardNumber = cardNumber,
-                CardType = cardType,
-                CVV = cvv,
-                ExpiryDate = expiryDate,
-                CardStatus = "Active",
-                CardLimit = cardType == "Debit" ? account.Balance : 5000,
-                CreatedAt = DateTime.Now
-            };
-
-            _context.Cards.Add(card);
-            await _context.SaveChangesAsync();
-
-            await _auditLog.LogAsync($"Requested new {cardType} card", "Card Management");
-
-            TempData["Success"] = $"{cardType} card requested successfully! Your card will be delivered soon.";
             return RedirectToAction("MyCards");
         }
 
-        // POST: Card/ActivateCard
-        [HttpPost]
-        public async Task<IActionResult> ActivateCard(int cardId)
+        // GET: Card/MyRequests
+        public async Task<IActionResult> MyRequests()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
-            var account = await _context.BankAccounts
-                .FirstOrDefaultAsync(ba => ba.UserId == userId);
+            var requests = await _context.CardRequests
+                .Include(cr => cr.Account)
+                .Include(cr => cr.Approver)
+                .Where(cr => cr.UserId == userId)
+                .OrderByDescending(cr => cr.CreatedAt)
+                .ToListAsync();
 
+            return View(requests);
+        }
+
+        // GET: Card/CardDetails
+        public async Task<IActionResult> CardDetails(int id)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
             var card = await _context.Cards
-                .FirstOrDefaultAsync(c => c.CardId == cardId && c.AccountId == account.AccountId);
+                .Include(c => c.Account)
+                .FirstOrDefaultAsync(c => c.CardId == id && c.Account!.UserId == userId);
 
             if (card == null)
             {
@@ -124,38 +114,106 @@ namespace BankAndFinance.Controllers
                 return RedirectToAction("MyCards");
             }
 
-            card.CardStatus = "Active";
-            await _context.SaveChangesAsync();
+            // Get transactions for this card
+            var transactions = await _context.Transactions
+                .Where(t => t.AccountId == card.AccountId && 
+                           t.PaymentMode != null && t.PaymentMode.Contains(card.CardNumber.Substring(card.CardNumber.Length - 4)))
+                .OrderByDescending(t => t.TransactionDate)
+                .Take(50)
+                .ToListAsync();
 
-            await _auditLog.LogAsync($"Activated card ending in {card.CardNumber.Substring(card.CardNumber.Length - 4)}", "Card Management");
+            ViewBag.Transactions = transactions;
+            return View(card);
+        }
 
-            TempData["Success"] = "Card activated successfully!";
+        // GET: Card/Transfer
+        [HttpGet]
+        public async Task<IActionResult> Transfer()
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var cards = await _cardService.GetUserCardsAsync(userId.Value);
+            
+            ViewBag.Cards = cards.Where(c => c.CardStatus == "Active").ToList();
+            return View();
+        }
+
+        // POST: Card/Transfer
+        [HttpPost]
+        public async Task<IActionResult> Transfer(int fromCardId, int toCardId, decimal amount, string? description)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var result = await _cardService.TransferBetweenCardsAsync(fromCardId, toCardId, amount, description);
+
+            if (result.Success)
+            {
+                await _auditLog.LogAsync($"Transferred ${amount:N2} between cards", "Card Transfer");
+                TempData["Success"] = result.Message;
+            }
+            else
+            {
+                TempData["Error"] = result.Message;
+            }
+
             return RedirectToAction("MyCards");
         }
 
-        // POST: Card/DeactivateCard
+        // POST: Card/SetPrimary
         [HttpPost]
-        public async Task<IActionResult> DeactivateCard(int cardId)
+        public async Task<IActionResult> SetPrimary(int cardId)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
-            var account = await _context.BankAccounts
-                .FirstOrDefaultAsync(ba => ba.UserId == userId);
+            var result = await _cardService.SetPrimaryCardAsync(cardId, userId.Value);
 
-            var card = await _context.Cards
-                .FirstOrDefaultAsync(c => c.CardId == cardId && c.AccountId == account.AccountId);
-
-            if (card == null)
+            if (result.Success)
             {
-                TempData["Error"] = "Card not found";
-                return RedirectToAction("MyCards");
+                await _auditLog.LogAsync($"Set card as primary", "Card Management");
+                TempData["Success"] = result.Message;
+            }
+            else
+            {
+                TempData["Error"] = result.Message;
             }
 
-            card.CardStatus = "Inactive";
-            await _context.SaveChangesAsync();
+            return RedirectToAction("MyCards");
+        }
 
-            await _auditLog.LogAsync($"Deactivated card ending in {card.CardNumber.Substring(card.CardNumber.Length - 4)}", "Card Management");
+        // POST: Card/BlockCard
+        [HttpPost]
+        public async Task<IActionResult> BlockCard(int cardId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var result = await _cardService.BlockCardAsync(cardId, userId.Value);
 
-            TempData["Success"] = "Card deactivated successfully!";
+            if (result.Success)
+            {
+                await _auditLog.LogAsync($"Blocked card", "Card Management");
+                TempData["Success"] = result.Message;
+            }
+            else
+            {
+                TempData["Error"] = result.Message;
+            }
+
+            return RedirectToAction("MyCards");
+        }
+
+        // POST: Card/UnblockCard
+        [HttpPost]
+        public async Task<IActionResult> UnblockCard(int cardId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var result = await _cardService.UnblockCardAsync(cardId, userId.Value);
+
+            if (result.Success)
+            {
+                await _auditLog.LogAsync($"Unblocked card", "Card Management");
+                TempData["Success"] = result.Message;
+            }
+            else
+            {
+                TempData["Error"] = result.Message;
+            }
+
             return RedirectToAction("MyCards");
         }
 

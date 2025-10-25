@@ -63,6 +63,12 @@ namespace BankAndFinance.Controllers
             HttpContext.Session.SetString("UserName", user.FullName);
             HttpContext.Session.SetString("UserEmail", user.Email);
             HttpContext.Session.SetString("UserRole", user.Role!.RoleName);
+            
+            // Set profile photo in session if exists
+            if (!string.IsNullOrEmpty(user.ProfilePhoto))
+            {
+                HttpContext.Session.SetString("ProfilePhoto", user.ProfilePhoto);
+            }
 
             // Log the login
             var auditLog = new AuditLog
